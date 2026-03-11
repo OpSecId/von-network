@@ -77,7 +77,7 @@ supervisord -c supervisord.conf &
 
 echo "Waiting for pool to be ready..."
 for i in $(seq 1 30); do
-  if python -c "
+  if python3 -c "
 import asyncio
 import indy_vdr
 from indy_vdr import open_pool
@@ -89,7 +89,7 @@ async def check():
         return True
     except Exception:
         return False
-assert asyncio.get_event_loop().run_until_complete(check())
+exit(0 if asyncio.run(check()) else 1)
 " 2>/dev/null; then
     echo "Pool is ready."
     break
