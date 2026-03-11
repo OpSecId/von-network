@@ -23,9 +23,17 @@ if [ ! -d "/home/indy/ledger/sandbox/keys" ]; then
   bash ./scripts/init_genesis.sh
   if [ -n "$CLIENT_HOSTS" ]; then
     echo "Patching genesis client endpoints (CLIENT_HOSTS)..."
+    cp /home/indy/ledger/sandbox/pool_transactions_genesis /home/indy/ledger/sandbox/pool_transactions_genesis_internal
     export GENESIS_FILE="${GENESIS_FILE:-/home/indy/ledger/sandbox/pool_transactions_genesis}"
     python3 /home/indy/scripts/patch_genesis_client_endpoints.py
+    export POOL_GENESIS_FILE="/home/indy/ledger/sandbox/pool_transactions_genesis_internal"
+    export GENESIS_PUBLIC_FILE="/home/indy/ledger/sandbox/pool_transactions_genesis"
   fi
+fi
+# When internal genesis exists (e.g. after restart with CLIENT_HOSTS), set pool/public paths for server and readiness check
+if [ -f /home/indy/ledger/sandbox/pool_transactions_genesis_internal ]; then
+  export POOL_GENESIS_FILE="/home/indy/ledger/sandbox/pool_transactions_genesis_internal"
+  export GENESIS_PUBLIC_FILE="/home/indy/ledger/sandbox/pool_transactions_genesis"
 fi
 
 # Same supervisord setup as scripts/start_nodes.sh
@@ -79,12 +87,14 @@ echo "Waiting for pool to be ready..."
 for i in $(seq 1 30); do
   if python3 -c "
 import asyncio
+import os
 import indy_vdr
 from indy_vdr import open_pool
 indy_vdr.set_protocol_version(2)
+path = os.environ.get('POOL_GENESIS_FILE', '/home/indy/ledger/sandbox/pool_transactions_genesis')
 async def check():
     try:
-        pool = await open_pool(transactions_path='/home/indy/ledger/sandbox/pool_transactions_genesis')
+        pool = await open_pool(transactions_path=path)
         pool.close()
         return True
     except Exception:

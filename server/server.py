@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import shutil
 import yaml
 import aiohttp_jinja2
@@ -20,6 +21,7 @@ from .anchor import (
     AnchorHandle,
     AnchorException,
     NotReadyException,
+    GENESIS_PUBLIC_FILE,
     INDY_ROLE_TYPES,
     INDY_TXN_TYPES,
     REGISTER_NEW_DIDS,
@@ -303,6 +305,9 @@ async def ledger_seq(request):
 # Expose genesis transaction for easy connection.
 @BASE_ROUTES.get("/genesis")
 async def genesis(request):
+    if GENESIS_PUBLIC_FILE and Path(GENESIS_PUBLIC_FILE).exists():
+        with open(GENESIS_PUBLIC_FILE, "r") as f:
+            return web.Response(text=f.read())
     if not TRUST_ANCHOR.ready:
         return not_ready_json()
     genesis = await TRUST_ANCHOR.get_genesis()

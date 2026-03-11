@@ -73,6 +73,8 @@ POOL_CONNECTION_ATTEMPTS = int(os.getenv("POOL_CONNECTION_ATTEMPTS", "5"))
 POOL_CONNECTION_DELAY = int(os.getenv("POOL_CONNECTION_DELAY", "10"))
 
 GENESIS_FILE = os.getenv("GENESIS_FILE") or "/home/indy/ledger/sandbox/pool_transactions_genesis"
+POOL_GENESIS_FILE = os.getenv("POOL_GENESIS_FILE")  # internal genesis for open_pool when using CLIENT_HOSTS split
+GENESIS_PUBLIC_FILE = os.getenv("GENESIS_PUBLIC_FILE")  # patched genesis for GET /genesis when using CLIENT_HOSTS
 GENESIS_URL = os.getenv("GENESIS_URL")
 GENESIS_VERIFIED = False
 
@@ -156,6 +158,10 @@ async def resolve_genesis_file():
     global GENESIS_FILE
     global GENESIS_VERIFIED
     global GENESIS_URL
+
+    if POOL_GENESIS_FILE and Path(POOL_GENESIS_FILE).exists():
+        LOGGER.info("Using internal genesis for pool connection: %s", POOL_GENESIS_FILE)
+        return POOL_GENESIS_FILE
 
     if not GENESIS_VERIFIED:
         if not GENESIS_URL and GENESIS_FILE and Path(GENESIS_FILE).exists():
@@ -478,6 +484,9 @@ class AnchorHandle:
     async def get_genesis(self) -> str:
         if not self.ready:
             raise NotReadyException()
+        if GENESIS_PUBLIC_FILE and Path(GENESIS_PUBLIC_FILE).exists():
+            with open(GENESIS_PUBLIC_FILE, "r") as f:
+                return f.read()
         txns = await self._pool.get_transactions()
         return txns
 

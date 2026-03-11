@@ -148,7 +148,7 @@ When you can only **map a domain to one internal port** (e.g. Railway: one custo
    ```
 4. (Optional) Add a **fifth** domain for the Ledger Browser (e.g. `ledger.yourdomain.com` → internal port **8000** or whatever `PORT` is).
 
-Genesis is generated with `node_ip`/`node_port` from **`NODE_HOST`** and the usual internal ports; then a patch step sets `client_ip`/`client_port` from **`CLIENT_HOSTS`** and **`CLIENT_PORT`**. External agents use the genesis file and connect to `node1.yourdomain.com:443`, etc.
+Genesis is generated with `node_ip`/`node_port` from **`NODE_HOST`** and the usual internal ports; then a patch step sets `client_ip`/`client_port` from **`CLIENT_HOSTS`** and **`CLIENT_PORT`**. The entrypoint keeps an **internal** copy of the genesis (before patch) and sets **`POOL_GENESIS_FILE`** / **`GENESIS_PUBLIC_FILE`** so the Ledger Browser **connects to the pool** using the internal copy (reachable from inside the container) and **serves** the patched genesis at **GET /genesis** for external agents. External agents use that URL and connect to `node1.yourdomain.com:443`, etc.
 
 ### Troubleshooting: "verkey cannot be found" for validator nodes
 
