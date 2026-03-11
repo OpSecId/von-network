@@ -84,3 +84,17 @@ body {
   z-index: 1;
   cursor: default;
 }
+
+/* Compact modal forms: tighter spacing, single Close */
+.modal-form-compact {
+  padding: 1rem 1.25rem;
+}
+.modal-form .form-control {
+  margin-bottom: 0.5rem;
+}
+.modal-form .form-control:last-of-type {
+  margin-bottom: 0;
+}
+.modal-form .label {
+  min-height: 1.25rem;
+}
