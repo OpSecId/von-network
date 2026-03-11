@@ -53,3 +53,34 @@ body {
 .ledger-state-link .fa-chevron-right {
   color: rgba(34, 211, 238, 0.85);
 }
+
+/* Modal overlay: ensure modals sit above page content as overlay */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.modal.modal-open {
+  display: flex;
+}
+.modal-box {
+  position: relative;
+  z-index: 10;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background-color: hsl(var(--b1));
+  border-radius: var(--rounded-box, 1rem);
+  padding: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: default;
+}
