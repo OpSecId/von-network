@@ -273,6 +273,10 @@ It is possible to customize some of the aspects of the Ledger Browser at run-tim
 
 - `INFO_SITE_URL`: A URL that will be displayed in the header, and can be used to reference another external website containing details/resources on the current ledger instance.
 
+- `FAVICON_URL`: Optional URL of the favicon (browser tab icon). If set, the page `<link rel="icon">` and the `/favicon.ico` route will use this URL.
+
+- `LOGO_URL`: Optional URL of a logo image shown in the header next to the ledger name.
+
 - `WEB_ANALYTICS_SCRIPT` [`<empty>`]: the JavaScript code used by web analytics servers. Populate this environment variable if you want to track the usage of your site with Matomo, Google Analytics or any other JavaScript based trackers. Include the whole ```<script type="text/javascript">...</script>``` tag, ensuring quotes are escaped properly for your command-line interpreter (e.g.: bash, git bash, etc.).
 
 - `LEDGER_CACHE_PATH` [`<empty>`]: If set, it will instruct the ledger browser to create an on-disk cache, rather than in-memory cache.  The image supplies a folder for this purpose; `$HOME/.indy_client/ledger-cache`.  The file should be placed into this directory (e.g.: `/home/indy/.indy-client/ledger-cache/ledger_cache_file` or `$HOME/.indy_client/ledger-cache/ledger_cache_file`).

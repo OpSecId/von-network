@@ -1,96 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ LEDGER_INSTANCE_NAME }} Indy Network</title>
-  <link href="include/css/index.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  {% if FAVICON_URL %}
+  <link rel="icon" href="{{ FAVICON_URL }}" type="image/x-icon">
+  {% endif %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <script type="text/javascript"
-      src="https://code.jquery.com/jquery-3.2.1.min.js"
-      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-      crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="include/js/common.js"></script>
-
+  <style type="text/tailwindcss">
+    body { font-family: 'Inter', sans-serif; }
+  </style>
   {% include 'analytics.html' %}
-
 </head>
-<body>
+<body class="min-h-screen bg-base-200">
 
   {% include 'header.html' %}
 
   {% raw %}
-  <main id="vue-outer">
-    <div :class="'row-outer' + (anonymous ? ' anonymous' : '')">
-      <div class="col-main">
-        <div class="panel panel-info" style="display: none" v-show="init_error">
-          <div class="panel-body error">
-            <p>
-              {{ init_error }}
-            </p>
-          </div>
+  <main id="vue-outer" class="container mx-auto px-4 py-6">
+    <div :class="'flex flex-col lg:flex-row gap-6 w-full' + (anonymous ? ' anonymous' : '')">
+      <div class="flex-1 min-w-0">
+        <div class="alert alert-error shadow-lg mb-4" style="display: none" v-show="init_error">
+          <span class="fa fa-exclamation-circle"></span>
+          <span>{{ init_error }}</span>
         </div>
-        <div class="panel panel-info" style="display: none" v-show="! ready && ! init_error">
-          <div class="panel-body warning not-ready">
-            <p>
-              <span class="fa fa-circle-o-notch fa-spin fa-fw"></span> Connecting to server ...
-            </p>
-          </div>
+        <div class="alert alert-warning shadow-lg mb-4" style="display: none" v-show="! ready && ! init_error">
+          <span class="fa fa-circle-o-notch fa-spin fa-fw"></span>
+          <span>Connecting to server ...</span>
         </div>
-        <div class="panel panel-default panel-node-status" style="display: none" v-show="ready && ! anonymous">
-          <div class="panel-heading">
-            <h2>
-              <span class="fa fa-tachometer"></span>
+        <div class="card bg-base-100 shadow-xl border border-base-300 mb-6" style="display: none" v-show="ready && ! anonymous">
+          <div class="card-body">
+            <h2 class="card-title text-lg">
+              <span class="fa fa-tachometer opacity-80"></span>
               Validator Node Status
             </h2>
-          </div>
-          <div class="panel-body">
-            <div class="panel panel-node">
-              <div class="panel-body loading" v-if="! status">
-                <p>
-                  <span class="fa fa-circle-o-notch fa-spin fa-fw"></span> Loading status ...
-                </p>
+            <div class="rounded-lg bg-base-200 border border-base-300 overflow-hidden">
+              <div class="p-6 text-center text-base-content/70" v-if="! status">
+                <span class="fa fa-circle-o-notch fa-spin fa-fw"></span> Loading status ...
               </div>
-              <div class="panel-body error" v-if="status && status.err">
-                <p>
-                  <span class="fa fa-warning"></span> Error loading validator node status.
-                </p>
+              <div class="p-6 alert alert-error rounded-none" v-if="status && status.err">
+                <span class="fa fa-warning"></span> Error loading validator node status.
               </div>
               <template v-if="status && status.rows">
-                <div class="panel-body node-status" v-for="row in status.rows">
-                  <div class="node-status-left">
-                    <label class="node-name"><span class="nodeval-name">{{ row.name }}</span></label>
-                    <div class="node-indicator">
+                <div class="flex flex-wrap gap-4 p-4 border-b border-base-300 last:border-b-0" v-for="row in status.rows">
+                  <div class="flex flex-col items-center flex-shrink-0 w-28">
+                    <span class="font-semibold text-sm text-base-content/80 mb-2">{{ row.name }}</span>
+                    <div class="w-20 h-20 flex-shrink-0">
                       <svg width="100%" height="100%" viewBox="0 0 120 120">
-                          <circle cx="60" cy="60" r="54" fill="none" stroke="#e6e6e6" stroke-width="12" />
-                          <circle class="progress-circle" cx="60" cy="60" r="54" fill="none" stroke="#80DDE6" stroke-width="12"
-                              stroke-linecap="round" :stroke-dasharray="row.dash_array" :stroke-dashoffset="row.dash_offset" transform="rotate(-90, 60, 60)" />
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="12" class="text-base-300" />
+                        <circle class="progress-circle text-primary" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="12"
+                            stroke-linecap="round" :stroke-dasharray="row.dash_array" :stroke-dashoffset="row.dash_offset" transform="rotate(-90, 60, 60)" />
                       </svg>
                     </div>
                   </div>
-                  <div class="node-status-right">
-                    <dl class="props">
-                      <dt>Node properties</dt>
-                      <dd class="node-did"><label>DID:</label> <code class="nodeval-did">{{ row.did }}</code></dd>
-                      <dd class="node-state" v-if="row.state"><label>State:</label> <span class="nodeval-state">{{ row.state }}</span></dd>
-                      <dd class="node-uptime"><label>Uptime:</label> <span class="nodeval-uptime">{{ row.uptime }}</span></dd>
-                      <dd class="node-txns"><label>Txns:</label> <span class="nodeval-txns">{{ row.txns }}</span></dd>
-                      <dd class="node-unreach" v-if="row.unreachable"><label>Unreachable hosts:</label> <span class="nodeval-unreach">{{ row.unreachable }}</span></dd>
-                      <dd class="node-indyver"><label>indy-node version:</label> <span class="nodeval-indyver">{{ row.indy_version }}</span></dd>
-                    </dl>
+                  <div class="flex-1 min-w-0 text-sm space-y-1">
+                    <p><span class="text-base-content/60 font-medium">DID:</span> <code class="text-xs bg-base-300 px-1 rounded break-all">{{ row.did }}</code></p>
+                    <p v-if="row.state"><span class="text-base-content/60 font-medium">State:</span> {{ row.state }}</p>
+                    <p><span class="text-base-content/60 font-medium">Uptime:</span> {{ row.uptime }}</p>
+                    <p><span class="text-base-content/60 font-medium">Txns:</span> {{ row.txns }}</p>
+                    <p v-if="row.unreachable" class="text-error"><span class="font-medium">Unreachable:</span> {{ row.unreachable }}</p>
+                    <p><span class="text-base-content/60 font-medium">indy-node:</span> {{ row.indy_version }}</p>
                   </div>
                 </div>
               </template>
             </div>
-            <p>
-              View detailed information about the status of the running validator nodes:
-            </p>
-            <p>
-              <a href="/status/text" class="tool"><span class="fa fa-chevron-right left"></span>Detailed Status</a>
-            </p>
+            <p class="mt-4 text-sm text-base-content/70">View detailed information about the status of the running validator nodes:</p>
+            <a href="/status/text" class="btn btn-sm btn-ghost gap-2 mt-1">
+              <span class="fa fa-chevron-right"></span> Detailed Status
+            </a>
           </div>
         </div>
         {% endraw %}
@@ -98,109 +82,83 @@
         {% raw %}
       </div>
 
-      <aside class="col-tools" style="display: none" v-show="ready">
-        <div class="panel panel-side connect">
-          <div class="panel-heading">
-            <h2>
-              <span class="fa fa-plug"></span>
+      <aside class="w-full lg:w-80 flex-shrink-0 space-y-6" style="display: none" v-show="ready">
+        <div class="card bg-base-100 shadow-xl border border-base-300">
+          <div class="card-body">
+            <h2 class="card-title text-lg">
+              <span class="fa fa-plug opacity-80"></span>
               Connect to the Network
             </h2>
-          </div>
-          <div class="panel-body">
-            <p>
-              Download the genesis transaction file to connect to the network.
-            </p>
-            <div class="form-group">
-              <a href="/genesis" class="tool-button"><span class="fa fa-download left"></span>Genesis Transaction</a>
-              <span class="tool-tag">JSON</span>
-            </div>
+            <p class="text-sm text-base-content/70">Download the genesis transaction file to connect to the network.</p>
+            <a href="/genesis" class="btn btn-primary gap-2">
+              <span class="fa fa-download"></span> Genesis Transaction
+            </a>
+            <span class="badge badge-ghost badge-sm">JSON</span>
           </div>
         </div>
 
-        <div class="panel panel-side authorize" v-if="register_new_dids">
-          <div class="panel-heading">
-            <h2>
-              <span class="fa fa-key"></span>
+        <div class="card bg-base-100 shadow-xl border border-base-300" v-if="register_new_dids">
+          <div class="card-body">
+            <h2 class="card-title text-lg">
+              <span class="fa fa-key opacity-80"></span>
               Authenticate a New DID
             </h2>
-          </div>
-          <div class="panel-body" v-show="true">
-            <p>
-              Easily write a new DID to the ledger for new identity owners.
-            </p>
-            <form action="/register" method="get" accept-charset="utf-8" @submit.prevent="register">
-              <div class="form-group">
-                <input type="radio" value="seed" v-model="reg_info.reg_type" id="reg-seed">
-                  <label for="reg-seed" class="tool-label inline">Register from seed</label>
-                &nbsp; <input type="radio" value="did" v-model="reg_info.reg_type" id="reg-did">
-                  <label for="reg-did" class="tool-label inline">Register from DID</label>
+            <p class="text-sm text-base-content/70">Easily write a new DID to the ledger for new identity owners.</p>
+            <form action="/register" method="get" accept-charset="utf-8" @submit.prevent="register" class="space-y-3 mt-2">
+              <div class="form-control">
+                <div class="flex gap-4">
+                  <label class="label cursor-pointer gap-2">
+                    <input type="radio" value="seed" v-model="reg_info.reg_type" class="radio radio-primary radio-sm">
+                    <span class="label-text">Register from seed</span>
+                  </label>
+                  <label class="label cursor-pointer gap-2">
+                    <input type="radio" value="did" v-model="reg_info.reg_type" class="radio radio-primary radio-sm">
+                    <span class="label-text">Register from DID</span>
+                  </label>
+                </div>
               </div>
-
-              <div class="form-group" v-if="reg_info.reg_type == 'seed'">
-                <label class="tool-label">Wallet seed (32 characters or base64)</label>
-                <input
-                  class="tool-input wallet-seed"
-                  type="text"
-                  name="seed"
-                  v-model="reg_info.seed"
-                  required
-                >
+              <div class="form-control" v-if="reg_info.reg_type == 'seed'">
+                <label class="label"><span class="label-text">Wallet seed (32 chars or base64)</span></label>
+                <input type="text" name="seed" v-model="reg_info.seed" required
+                  class="input input-bordered input-sm w-full max-w-xs">
               </div>
-              <div class="form-group">
-                <label class="tool-label">DID <template v-if="reg_info.reg_type == 'seed'">(optional)</template></label>
-                <input
-                  class="tool-input wallet-seed"
-                  type="text"
-                  name="did"
-                  v-model="reg_info.did"
-                  :required="reg_info.reg_type == 'did'"
-                >
+              <div class="form-control">
+                <label class="label"><span class="label-text">DID <template v-if="reg_info.reg_type == 'seed'">(optional)</template></span></label>
+                <input type="text" name="did" v-model="reg_info.did" :required="reg_info.reg_type == 'did'"
+                  class="input input-bordered input-sm w-full max-w-xs">
               </div>
-              <div class="form-group" v-if="reg_info.reg_type == 'did'">
-                <label class="tool-label">Verkey</label>
-                <input
-                  class="tool-input wallet-seed"
-                  type="text"
-                  name="verkey"
-                  v-model="reg_info.verkey"
-                  required
-                >
+              <div class="form-control" v-if="reg_info.reg_type == 'did'">
+                <label class="label"><span class="label-text">Verkey</span></label>
+                <input type="text" name="verkey" v-model="reg_info.verkey" required
+                  class="input input-bordered input-sm w-full max-w-xs">
               </div>
-              <div class="form-group">
-                <label class="tool-label">Alias (optional)</label>
-                <input
-                  class="tool-input wallet-seed"
-                  type="text"
-                  name="alias"
-                  v-model="reg_info.alias"
-                >
+              <div class="form-control">
+                <label class="label"><span class="label-text">Alias (optional)</span></label>
+                <input type="text" name="alias" v-model="reg_info.alias"
+                  class="input input-bordered input-sm w-full max-w-xs">
               </div>
-              <div class="form-group">
-                <label class="tool-label">Role</label>
-                <select name="role" v-model="reg_info.role">
+              <div class="form-control">
+                <label class="label"><span class="label-text">Role</span></label>
+                <select name="role" v-model="reg_info.role" class="select select-bordered select-sm w-full max-w-xs">
                   <option value="">(None)</option>
                   <option v-for="opt in role_options" :value="opt.value">{{opt.label}}</option>
                 </select>
               </div>
-              <div class="form-group">
-                <button class="tool-button" type="submit" name="register"><span class="fa fa-sign-in left"></span>Register DID</button>
-              </div>
+              <button type="submit" name="register" class="btn btn-primary btn-sm gap-2 mt-2">
+                <span class="fa fa-sign-in"></span> Register DID
+              </button>
             </form>
-
-            <div class="register-result" v-if="reg_result">
-              <h3>Identity successfully registered:</h3>
-              <code>
-                <span v-if="reg_result.seed"><b>Seed: </b> {{reg_result.seed}}<br></span>
-                <b>DID: </b> {{reg_result.did}}<br>
-                <b>Verkey:</b> {{reg_result.verkey}}
-              </code>
+            <div class="alert alert-success mt-4 shadow-lg" v-if="reg_result">
+              <span class="font-semibold">Identity successfully registered:</span>
+              <pre class="text-xs mt-2 whitespace-pre-wrap break-all"><span v-if="reg_result.seed"><b>Seed:</b> {{reg_result.seed}}</span>
+<b>DID:</b> {{reg_result.did}}
+<b>Verkey:</b> {{reg_result.verkey}}</pre>
             </div>
-            <div class="error register-error" v-if="reg_error">
-              Error: identity not registered.
+            <div class="alert alert-error mt-4 shadow-lg" v-if="reg_error">
+              <span>Error: identity not registered.</span>
             </div>
           </div>
         </div>
-
       </aside>
     </div>
   </main>
@@ -209,4 +167,3 @@
   <script src="include/js/index.js" type="text/javascript"></script>
 </body>
 </html>
-

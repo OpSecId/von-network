@@ -53,6 +53,9 @@ LOGGER.info(
 INFO_SITE_URL = os.getenv("INFO_SITE_URL")
 INFO_SITE_TEXT = os.getenv("INFO_SITE_TEXT") or os.getenv("INFO_SITE_URL")
 
+FAVICON_URL = os.getenv("FAVICON_URL")
+LOGO_URL = os.getenv("LOGO_URL")
+
 INDY_SCAN_URL = os.getenv("INDY_SCAN_URL")
 INDY_SCAN_TEXT = os.getenv("INDY_SCAN_TEXT") or os.getenv("INDY_SCAN_URL")
 
@@ -76,6 +79,8 @@ async def index(request):
         "INFO_SITE_URL": INFO_SITE_URL,
         "INDY_SCAN_URL": INDY_SCAN_URL,
         "INDY_SCAN_TEXT": INDY_SCAN_TEXT,
+        "FAVICON_URL": FAVICON_URL,
+        "LOGO_URL": LOGO_URL,
     }
 
 
@@ -87,12 +92,16 @@ async def browse(request):
         "WEB_ANALYTICS_SCRIPT": WEB_ANALYTICS_SCRIPT,
         "INFO_SITE_TEXT": INFO_SITE_TEXT,
         "INFO_SITE_URL": INFO_SITE_URL,
+        "FAVICON_URL": FAVICON_URL,
+        "LOGO_URL": LOGO_URL,
     }
 
 
 @BASE_ROUTES.get("/favicon.ico")
-async def favicon(request):
-    return web.FileResponse("static/favicon.ico")
+async def favicon_redirect(request):
+    if FAVICON_URL:
+        raise web.HTTPFound(FAVICON_URL)
+    raise web.HTTPNotFound()
 
 
 BASE_ROUTES.static("/include", "./static/include")

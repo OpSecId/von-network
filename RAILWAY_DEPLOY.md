@@ -81,11 +81,9 @@ Run the **entire** VON Network (four Indy nodes + Ledger Browser) in a **single*
 
 3. **Set environment variables** (optional):
    - `PORT` – set by Railway.
-   - `LEDGER_SEED` – seed for the trust anchor (enables "Register DID" in the UI).
-   - For a **publicly reachable** pool (so agents can connect): set **`IP`** to your public domain (one host, multiple ports), or **`IPS`** to four comma-separated hostnames (different domains mapped to different ports). See **Making the pool publicly reachable** below.
+   - **`LEDGER_SEED`** – seed for the trust anchor. Enables "Register DID" and **Detailed Status** (validator nodes) in the UI. For these to work, the DID from this seed must exist on the ledger. The genesis created by von-network includes a **trustee** with seed **`000000000000000000000000Trustee1`**. Set **`LEDGER_SEED=000000000000000000000000Trustee1`** to use that identity (recommended for dev/demo). If you use a different seed, that DID is not on the ledger and you'll see "verkey cannot be found" for validator status—see **Troubleshooting** below.
+   - For a **publicly reachable** pool (so agents can connect): set **`IP`** or **`IPS`**; see **Making the pool publicly reachable** below.
    - `LEDGER_INSTANCE_NAME`, `REGISTER_NEW_DIDS`, etc. as needed.
-
-4. **Deploy.** First boot can take 1–2 minutes while the pool starts. Then open the service URL.
 
 4. **Deploy.** First boot can take 1–2 minutes while the pool starts. Then open the service URL.
 
@@ -117,6 +115,12 @@ IPS=node1.mydomain.com,node2.mydomain.com,node3.mydomain.com,node4.mydomain.com
 Genesis will list `node1.mydomain.com:9701`, `node2.mydomain.com:9703`, and so on. The Ledger Browser can use a fifth domain/port.
 
 **Railway:** The TCP proxy allows **one TCP port per service**, so you cannot expose all four node ports from one service. For a public pool on Railway you need either multiple services (one per node, each with a TCP proxy and domain) or a host that allows multiple TCP ports (then use pattern 1 with **`IP`**).
+
+### Troubleshooting: "verkey cannot be found" for validator nodes
+
+If the Ledger Browser shows **"could not authenticate, verkey for ... cannot be found"** for Node1–Node4 when loading **Detailed Status**, the trust anchor's DID (from **`LEDGER_SEED`**) is not on the ledger. The validator info request is signed by that DID; the nodes only accept DIDs that exist in the ledger.
+
+**Fix:** Set **`LEDGER_SEED=000000000000000000000000Trustee1`** in Railway. That seed is the genesis trustee, so the DID is already on the ledger. Redeploy (or restart) and the Detailed Status and "Register DID" features will work. For production you would register your own DID using that trustee (e.g. via indy-cli) and then use your seed; for dev/demo the default trustee seed is fine.
 
 ---
 
