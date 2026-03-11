@@ -18,11 +18,13 @@ from utils import env_bool
 
 from .anchor import (
     AnchorHandle,
+    AnchorException,
     NotReadyException,
     INDY_ROLE_TYPES,
     INDY_TXN_TYPES,
     REGISTER_NEW_DIDS,
-    DISPLAY_LEDGER_STATE
+    DISPLAY_LEDGER_STATE,
+    ENABLE_AUTH_RULE,
 )
 
 logging.basicConfig(level=(os.getenv("LOG_LEVEL", "").upper() or logging.INFO))
@@ -101,7 +103,8 @@ async def browse(request):
 async def favicon_redirect(request):
     if FAVICON_URL:
         raise web.HTTPFound(FAVICON_URL)
-    raise web.HTTPNotFound()
+    # No 404: return no content so the browser does not retry or log a failed request
+    return web.Response(status=204)
 
 
 BASE_ROUTES.static("/include", "./static/include")
@@ -355,6 +358,54 @@ async def register(request):
         return not_ready_json()
 
     return json_response({"seed": seed, "did": did, "verkey": verkey})
+
+
+@BASE_ROUTES.post("/auth-rule")
+async def auth_rule(request):
+    if not TRUST_ANCHOR.ready:
+        return not_ready_json()
+    if not ENABLE_AUTH_RULE:
+        return web.json_response(
+            data={"detail": "Auth rule configuration is not enabled."}, status=403
+        )
+
+    body = await request.json()
+    if not body:
+        return web.json_response(data={"detail": "Expected json request body"}, status=400)
+
+    auth_type = (body.get("auth_type") or body.get("txn_type") or "").strip().upper()
+    auth_action = (body.get("auth_action") or body.get("action") or "ADD").strip().upper()
+    if not auth_type:
+        return web.json_response(data={"detail": "auth_type (or txn_type) is required"}, status=400)
+    if auth_action not in ("ADD", "EDIT"):
+        return web.json_response(data={"detail": "auth_action must be ADD or EDIT"}, status=400)
+
+    field = (body.get("field") or "*").strip() or "*"
+    old_value = body.get("old_value", "*")
+    old_value = "*" if old_value is None or str(old_value).strip() == "" else str(old_value).strip()
+    new_value = body.get("new_value", "*")
+    new_value = "*" if new_value is None or str(new_value).strip() == "" else str(new_value).strip()
+    sig_count = int(body.get("sig_count", 1))
+    role = str(body.get("role", "101")).strip()
+    need_to_be_owner = bool(body.get("need_to_be_owner", False))
+
+    try:
+        await TRUST_ANCHOR.apply_auth_rule(
+            auth_type=auth_type,
+            auth_action=auth_action,
+            field=field,
+            old_value=old_value,
+            new_value=new_value,
+            sig_count=sig_count,
+            role=role,
+            need_to_be_owner=need_to_be_owner,
+        )
+    except AnchorException as e:
+        return web.json_response(data={"detail": str(e)}, status=400)
+    except NotReadyException:
+        return not_ready_json()
+
+    return json_response({"ok": True, "auth_type": auth_type, "auth_action": auth_action})
 
 
 async def boot(app):

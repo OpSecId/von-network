@@ -56,15 +56,13 @@
                   <div class="min-w-0 flex-1">
                     <p class="font-medium text-sm truncate" :title="row.name">{{ row.name }}</p>
                     <span class="badge badge-sm mt-1" :class="row.unreachable ? 'badge-error' : (row.state ? 'badge-success' : 'badge-ghost')">{{ row.state || (row.unreachable ? 'Unreachable' : '—') }}</span>
+                    <p v-if="row.did" class="text-xs text-base-content/60 mt-1.5 font-mono truncate" :title="row.did">Nym: {{ row.did }}</p>
                     <p v-if="row.uptime" class="text-xs text-base-content/60 mt-2" :title="row.uptime"><span class="fa fa-clock-o opacity-70"></span> {{ row.uptime }}</p>
                     <p v-if="row.txns" class="text-xs text-base-content/50 mt-0.5 font-mono" :title="row.txns">{{ row.txns }}</p>
                   </div>
                 </div>
               </div>
             </div>
-            <a href="/status/text" class="link link-hover text-xs text-base-content/60 mt-3 inline-flex items-center gap-1">
-              <span class="fa fa-external-link"></span> Detailed status
-            </a>
           </div>
         </div>
       </div>
@@ -80,63 +78,170 @@
               Authenticate a New DID
             </h2>
             <p class="text-sm text-base-content/70">Easily write a new DID to the ledger for new identity owners.</p>
-            <form action="/register" method="get" accept-charset="utf-8" @submit.prevent="register" class="space-y-3 mt-2">
-              <div class="form-control">
-                <div class="flex gap-4">
-                  <label class="label cursor-pointer gap-2">
-                    <input type="radio" value="seed" v-model="reg_info.reg_type" class="radio radio-primary radio-sm">
-                    <span class="label-text">Register from seed</span>
-                  </label>
-                  <label class="label cursor-pointer gap-2">
-                    <input type="radio" value="did" v-model="reg_info.reg_type" class="radio radio-primary radio-sm">
-                    <span class="label-text">Register from DID</span>
-                  </label>
-                </div>
-              </div>
-              <div class="form-control" v-if="reg_info.reg_type == 'seed'">
-                <label class="label"><span class="label-text">Wallet seed (32 chars or base64)</span></label>
-                <input type="text" name="seed" v-model="reg_info.seed" required
-                  class="input input-bordered input-sm w-full max-w-xs">
-              </div>
-              <div class="form-control">
-                <label class="label"><span class="label-text">DID <template v-if="reg_info.reg_type == 'seed'">(optional)</template></span></label>
-                <input type="text" name="did" v-model="reg_info.did" :required="reg_info.reg_type == 'did'"
-                  class="input input-bordered input-sm w-full max-w-xs">
-              </div>
-              <div class="form-control" v-if="reg_info.reg_type == 'did'">
-                <label class="label"><span class="label-text">Verkey</span></label>
-                <input type="text" name="verkey" v-model="reg_info.verkey" required
-                  class="input input-bordered input-sm w-full max-w-xs">
-              </div>
-              <div class="form-control">
-                <label class="label"><span class="label-text">Alias (optional)</span></label>
-                <input type="text" name="alias" v-model="reg_info.alias"
-                  class="input input-bordered input-sm w-full max-w-xs">
-              </div>
-              <div class="form-control">
-                <label class="label"><span class="label-text">Role</span></label>
-                <select name="role" v-model="reg_info.role" class="select select-bordered select-sm w-full max-w-xs">
-                  <option value="">(None)</option>
-                  <option v-for="opt in role_options" :value="opt.value">{{opt.label}}</option>
-                </select>
-              </div>
-              <button type="submit" name="register" class="btn btn-primary btn-sm gap-2 mt-2">
-                <span class="fa fa-sign-in"></span> Register DID
-              </button>
-            </form>
-            <div class="alert alert-success mt-4 shadow-lg" v-if="reg_result">
-              <span class="font-semibold">Identity successfully registered:</span>
-              <pre class="text-xs mt-2 whitespace-pre-wrap break-all"><span v-if="reg_result.seed"><b>Seed:</b> {{reg_result.seed}}</span>
-<b>DID:</b> {{reg_result.did}}
-<b>Verkey:</b> {{reg_result.verkey}}</pre>
-            </div>
-            <div class="alert alert-error mt-4 shadow-lg" v-if="reg_error">
-              <span>Error: identity not registered.</span>
-            </div>
+            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" @click="show_register_modal = true">
+              <span class="fa fa-key"></span> Authenticate a New DID
+            </button>
+          </div>
+        </div>
+        <div class="card bg-base-100 shadow-xl border border-base-300" v-if="enable_auth_rule">
+          <div class="card-body">
+            <h2 class="card-title text-lg">
+              <span class="fa fa-shield opacity-80"></span>
+              Configure Auth Rule
+            </h2>
+            <p class="text-sm text-base-content/70">Add or update a ledger auth rule (who may perform an action).</p>
+            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" @click="show_auth_rule_modal = true">
+              <span class="fa fa-shield"></span> Configure Auth Rule
+            </button>
           </div>
         </div>
       </aside>
     </div>
+
+    <!-- Register DID modal -->
+    <dialog class="modal" :class="{ 'modal-open': show_register_modal }">
+      <div class="modal-box max-w-md">
+        <h3 class="font-semibold text-lg flex items-center gap-2">
+          <span class="fa fa-key opacity-80"></span>
+          Authenticate a New DID
+        </h3>
+        <p class="text-sm text-base-content/70 mt-1">Write a new DID to the ledger for new identity owners.</p>
+        <form action="/register" method="get" accept-charset="utf-8" @submit.prevent="register" class="space-y-3 mt-4">
+          <div class="form-control">
+            <div class="flex gap-4">
+              <label class="label cursor-pointer gap-2">
+                <input type="radio" value="seed" v-model="reg_info.reg_type" class="radio radio-primary radio-sm">
+                <span class="label-text">Register from seed</span>
+              </label>
+              <label class="label cursor-pointer gap-2">
+                <input type="radio" value="did" v-model="reg_info.reg_type" class="radio radio-primary radio-sm">
+                <span class="label-text">Register from DID</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-control" v-if="reg_info.reg_type == 'seed'">
+            <label class="label"><span class="label-text">Wallet seed (32 chars or base64)</span></label>
+            <input type="text" name="seed" v-model="reg_info.seed" required
+              class="input input-bordered input-sm w-full">
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">DID <template v-if="reg_info.reg_type == 'seed'">(optional)</template></span></label>
+            <input type="text" name="did" v-model="reg_info.did" :required="reg_info.reg_type == 'did'"
+              class="input input-bordered input-sm w-full">
+          </div>
+          <div class="form-control" v-if="reg_info.reg_type == 'did'">
+            <label class="label"><span class="label-text">Verkey</span></label>
+            <input type="text" name="verkey" v-model="reg_info.verkey" required
+              class="input input-bordered input-sm w-full">
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Alias (optional)</span></label>
+            <input type="text" name="alias" v-model="reg_info.alias"
+              class="input input-bordered input-sm w-full">
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Role</span></label>
+            <select name="role" v-model="reg_info.role" class="select select-bordered select-sm w-full">
+              <option value="">(None)</option>
+              <option v-for="opt in role_options" :value="opt.value">{{opt.label}}</option>
+            </select>
+          </div>
+          <div class="flex gap-2 mt-4">
+            <button type="submit" name="register" class="btn btn-primary btn-sm gap-2" :disabled="loading">
+              <span class="fa fa-sign-in" :class="{ 'fa-spin': loading }"></span> Register DID
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" @click="show_register_modal = false">Cancel</button>
+          </div>
+        </form>
+        <div class="alert alert-success mt-4 shadow-lg" v-if="reg_result">
+          <span class="font-semibold">Identity successfully registered:</span>
+          <pre class="text-xs mt-2 whitespace-pre-wrap break-all"><span v-if="reg_result.seed"><b>Seed:</b> {{reg_result.seed}}</span>
+<b>DID:</b> {{reg_result.did}}
+<b>Verkey:</b> {{reg_result.verkey}}</pre>
+        </div>
+        <div class="alert alert-error mt-4 shadow-lg" v-if="reg_error">
+          <span>Error: identity not registered.</span>
+        </div>
+        <div class="modal-action mt-2">
+          <button type="button" class="btn btn-sm btn-ghost" @click="show_register_modal = false">Close</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button type="button" @click="show_register_modal = false">close</button>
+      </form>
+    </dialog>
+
+    <!-- Auth rule modal -->
+    <dialog class="modal" :class="{ 'modal-open': show_auth_rule_modal }">
+      <div class="modal-box max-w-md">
+        <h3 class="font-semibold text-lg flex items-center gap-2">
+          <span class="fa fa-shield opacity-80"></span>
+          Configure Auth Rule
+        </h3>
+        <p class="text-sm text-base-content/70 mt-1">Define who may perform a ledger action (e.g. 1 ENDORSER for SCHEMA ADD).</p>
+        <form @submit.prevent="submitAuthRule" class="space-y-3 mt-4">
+          <div class="form-control">
+            <label class="label"><span class="label-text">Transaction type</span></label>
+            <select v-model="auth_rule_info.auth_type" class="select select-bordered select-sm w-full">
+              <option v-for="opt in auth_rule_type_options" :value="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Action</span></label>
+            <select v-model="auth_rule_info.auth_action" class="select select-bordered select-sm w-full">
+              <option value="ADD">ADD</option>
+              <option value="EDIT">EDIT</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Field</span></label>
+            <input type="text" v-model="auth_rule_info.field" class="input input-bordered input-sm w-full" placeholder="*">
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Old value</span></label>
+            <input type="text" v-model="auth_rule_info.old_value" class="input input-bordered input-sm w-full" placeholder="*">
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">New value</span></label>
+            <input type="text" v-model="auth_rule_info.new_value" class="input input-bordered input-sm w-full" placeholder="*">
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Constraint: role</span></label>
+            <select v-model="auth_rule_info.role" class="select select-bordered select-sm w-full">
+              <option v-for="opt in auth_rule_role_options" :value="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Constraint: signature count</span></label>
+            <input type="number" min="1" v-model.number="auth_rule_info.sig_count" class="input input-bordered input-sm w-full">
+          </div>
+          <div class="form-control">
+            <label class="label cursor-pointer gap-2 justify-start">
+              <input type="checkbox" v-model="auth_rule_info.need_to_be_owner" class="checkbox checkbox-sm">
+              <span class="label-text">Need to be owner</span>
+            </label>
+          </div>
+          <div class="flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary btn-sm gap-2" :disabled="auth_rule_loading">
+              <span class="fa fa-shield" :class="{ 'fa-spin': auth_rule_loading }"></span> Apply Auth Rule
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" @click="show_auth_rule_modal = false">Cancel</button>
+          </div>
+        </form>
+        <div class="alert alert-success mt-4 shadow-lg" v-if="auth_rule_result">
+          <span class="font-semibold">Auth rule applied:</span> {{ auth_rule_result.auth_type }} {{ auth_rule_result.auth_action }}
+        </div>
+        <div class="alert alert-error mt-4 shadow-lg" v-if="auth_rule_error">
+          <span>{{ auth_rule_error }}</span>
+        </div>
+        <div class="modal-action mt-2">
+          <button type="button" class="btn btn-sm btn-ghost" @click="show_auth_rule_modal = false">Close</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button type="button" @click="show_auth_rule_modal = false">close</button>
+      </form>
+    </dialog>
   </main>
   {% endraw %}
 

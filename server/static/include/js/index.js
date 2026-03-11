@@ -9,6 +9,22 @@ var app = new Vue({
     reg_error: null,
     reg_result: null,
     register_new_dids: false,
+    show_register_modal: false,
+    enable_auth_rule: false,
+    show_auth_rule_modal: false,
+    auth_rule_info: {
+      auth_type: 'SCHEMA',
+      auth_action: 'ADD',
+      field: '*',
+      old_value: '*',
+      new_value: '*',
+      sig_count: 1,
+      role: '101',
+      need_to_be_owner: false
+    },
+    auth_rule_result: null,
+    auth_rule_error: null,
+    auth_rule_loading: false,
     display_ledger_state: false,
     loading: false,
     status: null,
@@ -18,6 +34,23 @@ var app = new Vue({
     role_options: function () {
       return [
         { value: 'ENDORSER', label: 'Endorser' }
+      ];
+    },
+    auth_rule_role_options: function () {
+      return [
+        { value: '0', label: 'TRUSTEE' },
+        { value: '2', label: 'STEWARD' },
+        { value: '101', label: 'ENDORSER' }
+      ];
+    },
+    auth_rule_type_options: function () {
+      return [
+        { value: 'SCHEMA', label: 'SCHEMA' },
+        { value: 'CLAIM_DEF', label: 'CLAIM_DEF (CRED_DEF)' },
+        { value: 'NYM', label: 'NYM' },
+        { value: 'ATTRIB', label: 'ATTRIB' },
+        { value: 'REVOC_REG_DEF', label: 'REVOC_REG_DEF' },
+        { value: 'REVOC_REG_ENTRY', label: 'REVOC_REG_ENTRY' }
       ];
     }
   },
@@ -36,6 +69,7 @@ var app = new Vue({
             self.ready = result.ready;
             self.register_new_dids = result.register_new_dids;
             self.display_ledger_state = result.display_ledger_state;
+            self.enable_auth_rule = result.enable_auth_rule || false;
             self.syncing = result.syncing;
             if (self.ready) {
               self.status = result.validators ? self.formatValidatorStatus(result.validators) : null;
@@ -179,6 +213,42 @@ var app = new Vue({
           self.loading = false;
         }
       );
+    },
+    submitAuthRule: function () {
+      this.auth_rule_loading = true;
+      this.auth_rule_error = null;
+      this.auth_rule_result = null;
+      var self = this;
+      var body = {
+        auth_type: this.auth_rule_info.auth_type,
+        auth_action: this.auth_rule_info.auth_action,
+        field: this.auth_rule_info.field || '*',
+        old_value: this.auth_rule_info.old_value || '*',
+        new_value: this.auth_rule_info.new_value || '*',
+        sig_count: parseInt(this.auth_rule_info.sig_count, 10) || 1,
+        role: String(this.auth_rule_info.role),
+        need_to_be_owner: this.auth_rule_info.need_to_be_owner
+      };
+      fetch('/auth-rule', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' }
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          var data;
+          try { data = JSON.parse(text); } catch (e) { data = { detail: text || 'Request failed' }; }
+          if (res.status === 200) {
+            self.auth_rule_result = data;
+            self.auth_rule_loading = false;
+          } else {
+            self.auth_rule_error = data.detail || data.error || text || 'Request failed';
+            self.auth_rule_loading = false;
+          }
+        });
+      }).catch(function (err) {
+        self.auth_rule_error = err.message || 'Request failed';
+        self.auth_rule_loading = false;
+      });
     }
   }
 });

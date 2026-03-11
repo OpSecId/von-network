@@ -368,6 +368,46 @@ class AnchorHandle:
             except AnchorException as e:
                 LOGGER.warning("Could not apply auth rule %s %s: %s", txn_type, action, e)
 
+    async def apply_auth_rule(
+        self,
+        auth_type: str,
+        auth_action: str,
+        field: str = "*",
+        old_value: str = "*",
+        new_value: str = "*",
+        sig_count: int = 1,
+        role: str = "101",
+        need_to_be_owner: bool = False,
+    ):
+        """Submit a single AUTH_RULE transaction. Requires ENABLE_AUTH_RULE and non-anonymous."""
+        if not ENABLE_AUTH_RULE or not self._did:
+            raise AnchorException("Auth rule configuration is not enabled")
+        if not getattr(ledger, "build_auth_rule_request", None):
+            raise AnchorException("indy_vdr does not support build_auth_rule_request")
+        constraint = {
+            "sig_count": int(sig_count),
+            "role": str(role),
+            "constraint_id": "ROLE",
+            "need_to_be_owner": bool(need_to_be_owner),
+        }
+        req = ledger.build_auth_rule_request(
+            self._did,
+            auth_type,
+            auth_action,
+            field or "*",
+            old_value if old_value is not None else "*",
+            new_value if new_value is not None else "*",
+            constraint,
+        )
+        await self.submit_request(req, True)
+        LOGGER.info(
+            "Applied auth rule: %s %s (role=%s, sig_count=%s)",
+            auth_type,
+            auth_action,
+            role,
+            sig_count,
+        )
+
     async def open(self):
         try:
             LEDGER_CACHE_PATH = os.getenv("LEDGER_CACHE_PATH")
@@ -706,6 +746,7 @@ class AnchorHandle:
             "anonymous": self.anonymous,
             "init_error": self._init_error,
             "register_new_dids": self._register_dids,
+            "enable_auth_rule": ENABLE_AUTH_RULE,
             "display_ledger_state": self._display_ledger_state,
             "ready": self.ready,
             "syncing": self._syncing,
