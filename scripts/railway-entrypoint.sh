@@ -2,15 +2,17 @@
 set -e
 
 # All-in-one: run 4 Indy nodes + Ledger Browser in one container.
-# Genesis uses 127.0.0.1 so the browser connects to the local pool.
+# Genesis node addresses: set IP (one host) or IPS (comma-separated hosts) in env for public reachability; else defaults to 127.0.0.1.
 
 cd /home/indy
 export HOST="${HOST:-0.0.0.0}"
 export NODE_NUM="1 2 3 4"
 
-# Use 127.0.0.1 in genesis so the webserver (same container) can connect to the pool
-export IP="${IP:-127.0.0.1}"
-unset IPS DOCKERHOST
+# Genesis: use IP or IPS from environment so pool can be publicly reachable; default 127.0.0.1 for local-only
+if [ -z "$IP" ] && [ -z "$IPS" ]; then
+  export IP="${IP:-127.0.0.1}"
+  unset IPS DOCKERHOST
+fi
 
 if [ ! -d "/home/indy/ledger/sandbox/keys" ]; then
   echo "Ledger does not exist - Creating genesis and keys..."
