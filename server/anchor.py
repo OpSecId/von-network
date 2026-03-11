@@ -82,6 +82,9 @@ REGISTER_NEW_DIDS = env_bool("REGISTER_NEW_DIDS", "False")
 
 DISPLAY_LEDGER_STATE = env_bool("DISPLAY_LEDGER_STATE", "True")
 
+ENABLE_AUTH_RULE = env_bool("ENABLE_AUTH_RULE", "False")
+LOGGER.info("ENABLE_AUTH_RULE is set to %s", ENABLE_AUTH_RULE)
+
 ENABLE_LEDGER_CACHE = env_bool("ENABLE_LEDGER_CACHE", "True")
 
 AML_CONFIG = os.getenv("AML_CONFIG_FILE", "/home/indy/config/aml.json")
@@ -311,6 +314,42 @@ class AnchorHandle:
                 taa_config["text"], taa_config["version"], None, next(iter(aml_methods))
             )
 
+    async def _apply_endorser_auth_rules(self):
+        """Apply auth rules requiring at least 1 endorser signature for SCHEMA and CRED_DEF (CLAIM_DEF) ADD."""
+        if not ENABLE_AUTH_RULE or not self._did:
+            return
+        if not getattr(ledger, "build_auth_rule_request", None):
+            LOGGER.warning(
+                "ENABLE_AUTH_RULE is set but indy_vdr has no build_auth_rule_request; "
+                "upgrade indy_vdr to apply endorser auth rules."
+            )
+            return
+        constraint = {
+            "sig_count": 1,
+            "role": "101",
+            "constraint_id": "ROLE",
+            "need_to_be_owner": False,
+        }
+        rules = [
+            ("SCHEMA", "ADD", "*", "*", "*"),
+            ("CLAIM_DEF", "ADD", "*", "*", "*"),
+        ]
+        for txn_type, action, field, old_value, new_value in rules:
+            try:
+                req = ledger.build_auth_rule_request(
+                    self._did,
+                    txn_type,
+                    action,
+                    field,
+                    old_value,
+                    new_value,
+                    constraint,
+                )
+                await self.submit_request(req, True)
+                LOGGER.info("Applied auth rule: %s %s (1 endorser)", txn_type, action)
+            except AnchorException as e:
+                LOGGER.warning("Could not apply auth rule %s %s: %s", txn_type, action, e)
+
     async def open(self):
         try:
             LEDGER_CACHE_PATH = os.getenv("LEDGER_CACHE_PATH")
@@ -331,6 +370,10 @@ class AnchorHandle:
                 except AnchorException:
                     self._init_error = "Error registering transaction agreement"
                     raise
+                try:
+                    await self._apply_endorser_auth_rules()
+                except AnchorException as e:
+                    LOGGER.warning("Applying endorser auth rules: %s", e)
             self._ledger_lock = asyncio.Lock()
             self._sync_lock = asyncio.Lock()
 

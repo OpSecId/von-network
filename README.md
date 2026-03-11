@@ -277,6 +277,8 @@ It is possible to customize some of the aspects of the Ledger Browser at run-tim
 
 - `LOGO_URL`: Optional URL of a logo image shown in the header next to the ledger name.
 
+- `ENABLE_AUTH_RULE` [`False`]: When set to `True`, the trust anchor (identity from `LEDGER_SEED`) submits AUTH_RULE transactions on startup so that **at least 1 endorser signature** is required for SCHEMA and CRED_DEF (claim definition) writes. This applies only when `LEDGER_SEED` is set (non-anonymous mode) and the DID has trustee permissions. Requires an indy_vdr version that provides `build_auth_rule_request` (e.g. indy_vdr 0.4.x); on older versions a warning is logged and rules are not applied.
+
 - `WEB_ANALYTICS_SCRIPT` [`<empty>`]: the JavaScript code used by web analytics servers. Populate this environment variable if you want to track the usage of your site with Matomo, Google Analytics or any other JavaScript based trackers. Include the whole ```<script type="text/javascript">...</script>``` tag, ensuring quotes are escaped properly for your command-line interpreter (e.g.: bash, git bash, etc.).
 
 - `LEDGER_CACHE_PATH` [`<empty>`]: If set, it will instruct the ledger browser to create an on-disk cache, rather than in-memory cache.  The image supplies a folder for this purpose; `$HOME/.indy_client/ledger-cache`.  The file should be placed into this directory (e.g.: `/home/indy/.indy-client/ledger-cache/ledger_cache_file` or `$HOME/.indy_client/ledger-cache/ledger_cache_file`).

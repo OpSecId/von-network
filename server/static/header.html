@@ -1,16 +1,19 @@
-<header class="navbar bg-primary text-primary-content shadow-lg px-4 lg:px-8">
+<header class="navbar bg-base-300 border-b border-base-content/10 text-base-content shadow-lg px-4 lg:px-8">
   <div class="flex-1">
     {% if LOGO_URL %}
     <img src="{{ LOGO_URL }}" alt="" class="h-8 w-auto mr-3 object-contain">
     {% endif %}
-    <a href="/" class="btn btn-ghost text-xl text-primary-content hover:bg-primary-focus">{{ LEDGER_INSTANCE_NAME }}</a>
-    <p class="hidden sm:inline-block ml-4 text-primary-content/90 text-sm">{{ LEDGER_DESCRIPTION }}</p>
+    <a href="/" class="btn btn-ghost text-xl text-base-content hover:bg-base-200">{{ LEDGER_INSTANCE_NAME }}</a>
+    <p class="hidden sm:inline-block ml-4 text-base-content/80 text-sm">{{ LEDGER_DESCRIPTION }}</p>
   </div>
-  {% if INFO_SITE_URL %}
-  <div class="flex-none">
-    <a class="btn btn-ghost btn-sm text-primary-content hover:bg-primary-focus" href="{{ INFO_SITE_URL }}" target="_blank" rel="noopener">
+  <div class="flex-none flex items-center gap-2">
+    <a href="/genesis" class="btn btn-ghost btn-square btn-sm text-base-content hover:bg-base-200" title="Download genesis transaction (connect to the network)">
+      <span class="fa fa-download text-lg"></span>
+    </a>
+    {% if INFO_SITE_URL %}
+    <a class="btn btn-ghost btn-sm text-base-content hover:bg-base-200" href="{{ INFO_SITE_URL }}" target="_blank" rel="noopener">
       {{ INFO_SITE_TEXT }} <i class="fa fa-external-link ml-1"></i>
     </a>
+    {% endif %}
   </div>
-  {% endif %}
 </header>

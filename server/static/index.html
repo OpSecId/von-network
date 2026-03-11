@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -41,62 +41,40 @@
               <span class="fa fa-tachometer opacity-80"></span>
               Validator Node Status
             </h2>
-            <div class="rounded-lg bg-base-200 border border-base-300 overflow-hidden">
+            <div class="rounded-lg bg-base-200/50 border border-base-300 overflow-hidden">
               <div class="p-6 text-center text-base-content/70" v-if="! status">
                 <span class="fa fa-circle-o-notch fa-spin fa-fw"></span> Loading status ...
               </div>
-              <div class="p-6 alert alert-error rounded-none" v-if="status && status.err">
+              <div class="p-4 alert alert-error rounded-none" v-if="status && status.err">
                 <span class="fa fa-warning"></span> Error loading validator node status.
               </div>
-              <template v-if="status && status.rows">
-                <div class="flex flex-wrap gap-4 p-4 border-b border-base-300 last:border-b-0" v-for="row in status.rows">
-                  <div class="flex flex-col items-center flex-shrink-0 w-28">
-                    <span class="font-semibold text-sm text-base-content/80 mb-2">{{ row.name }}</span>
-                    <div class="w-20 h-20 flex-shrink-0">
-                      <svg width="100%" height="100%" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="12" class="text-base-300" />
-                        <circle class="progress-circle text-primary" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="12"
-                            stroke-linecap="round" :stroke-dasharray="row.dash_array" :stroke-dashoffset="row.dash_offset" transform="rotate(-90, 60, 60)" />
-                      </svg>
-                    </div>
+              <div v-if="status && status.rows" class="flex flex-wrap gap-3 p-4">
+                <div v-for="row in status.rows" class="flex items-center gap-3 rounded-xl bg-base-100 border border-base-300 px-4 py-2.5 shadow-sm min-w-0 flex-1" style="max-width: 18rem;">
+                  <div class="flex-shrink-0 w-8 h-8">
+                    <svg width="100%" height="100%" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="10" class="text-base-300" />
+                      <circle class="progress-circle text-primary" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="10"
+                          stroke-linecap="round" :stroke-dasharray="row.dash_array" :stroke-dashoffset="row.dash_offset" transform="rotate(-90, 60, 60)" />
+                    </svg>
                   </div>
-                  <div class="flex-1 min-w-0 text-sm space-y-1">
-                    <p><span class="text-base-content/60 font-medium">DID:</span> <code class="text-xs bg-base-300 px-1 rounded break-all">{{ row.did }}</code></p>
-                    <p v-if="row.state"><span class="text-base-content/60 font-medium">State:</span> {{ row.state }}</p>
-                    <p><span class="text-base-content/60 font-medium">Uptime:</span> {{ row.uptime }}</p>
-                    <p><span class="text-base-content/60 font-medium">Txns:</span> {{ row.txns }}</p>
-                    <p v-if="row.unreachable" class="text-error"><span class="font-medium">Unreachable:</span> {{ row.unreachable }}</p>
-                    <p><span class="text-base-content/60 font-medium">indy-node:</span> {{ row.indy_version }}</p>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-medium text-sm truncate" :title="row.name">{{ row.name }}</p>
+                    <span class="badge badge-sm mt-1" :class="row.unreachable ? 'badge-error' : (row.state ? 'badge-success' : 'badge-ghost')">{{ row.state || (row.unreachable ? 'Unreachable' : '—') }}</span>
                   </div>
                 </div>
-              </template>
+              </div>
             </div>
-            <p class="mt-4 text-sm text-base-content/70">View detailed information about the status of the running validator nodes:</p>
-            <a href="/status/text" class="btn btn-sm btn-ghost gap-2 mt-1">
-              <span class="fa fa-chevron-right"></span> Detailed Status
+            <a href="/status/text" class="link link-hover text-xs text-base-content/60 mt-3 inline-flex items-center gap-1">
+              <span class="fa fa-external-link"></span> Detailed status
             </a>
           </div>
         </div>
-        {% endraw %}
-        {% include 'ledger_state.html' %}
-        {% raw %}
       </div>
 
       <aside class="w-full lg:w-80 flex-shrink-0 space-y-6" style="display: none" v-show="ready">
-        <div class="card bg-base-100 shadow-xl border border-base-300">
-          <div class="card-body">
-            <h2 class="card-title text-lg">
-              <span class="fa fa-plug opacity-80"></span>
-              Connect to the Network
-            </h2>
-            <p class="text-sm text-base-content/70">Download the genesis transaction file to connect to the network.</p>
-            <a href="/genesis" class="btn btn-primary gap-2">
-              <span class="fa fa-download"></span> Genesis Transaction
-            </a>
-            <span class="badge badge-ghost badge-sm">JSON</span>
-          </div>
-        </div>
-
+        {% endraw %}
+        {% include 'ledger_state.html' %}
+        {% raw %}
         <div class="card bg-base-100 shadow-xl border border-base-300" v-if="register_new_dids">
           <div class="card-body">
             <h2 class="card-title text-lg">

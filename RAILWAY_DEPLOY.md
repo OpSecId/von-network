@@ -83,6 +83,7 @@ Run the **entire** VON Network (four Indy nodes + Ledger Browser) in a **single*
    - `PORT` – set by Railway.
    - **`LEDGER_SEED`** – seed for the trust anchor. Enables "Register DID" and **Detailed Status** (validator nodes) in the UI. For these to work, the DID from this seed must exist on the ledger. The genesis created by von-network includes a **trustee** with seed **`000000000000000000000000Trustee1`**. Set **`LEDGER_SEED=000000000000000000000000Trustee1`** to use that identity (recommended for dev/demo). If you use a different seed, that DID is not on the ledger and you'll see "verkey cannot be found" for validator status—see **Troubleshooting** below.
    - For a **publicly reachable** pool (so agents can connect): set **`IP`** or **`IPS`**; see **Making the pool publicly reachable** below.
+   - **`ENABLE_AUTH_RULE`** – when set to `True`, the trust anchor submits AUTH_RULE transactions on startup so that at least 1 endorser signature is required for SCHEMA and CRED_DEF writes. Requires **`LEDGER_SEED`** (e.g. the genesis trustee seed) and an indy_vdr that supports `build_auth_rule_request`.
    - `LEDGER_INSTANCE_NAME`, `REGISTER_NEW_DIDS`, etc. as needed.
 
 4. **Deploy.** First boot can take 1–2 minutes while the pool starts. Then open the service URL.
