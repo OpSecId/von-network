@@ -324,6 +324,7 @@ class AnchorHandle:
                 "upgrade indy_vdr to apply endorser auth rules."
             )
             return
+        build_get = getattr(ledger, "build_get_auth_rule_request", None)
         constraint = {
             "sig_count": 1,
             "role": "101",
@@ -336,6 +337,23 @@ class AnchorHandle:
         ]
         for txn_type, action, field, old_value, new_value in rules:
             try:
+                if build_get:
+                    get_req = build_get(
+                        self._did,
+                        txn_type,
+                        action,
+                        field,
+                        old_value,
+                        new_value,
+                    )
+                    get_resp = await self.submit_request(get_req, True)
+                    if get_resp.get("data"):
+                        LOGGER.debug(
+                            "Auth rule already exists: %s %s, skipping",
+                            txn_type,
+                            action,
+                        )
+                        continue
                 req = ledger.build_auth_rule_request(
                     self._did,
                     txn_type,

@@ -8,15 +8,11 @@
   {% if FAVICON_URL %}
   <link rel="icon" href="{{ FAVICON_URL }}" type="image/x-icon">
   {% endif %}
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <link href="include/css/tailwind.css" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="include/js/common.js"></script>
-  <style type="text/tailwindcss">
-    body { font-family: 'Inter', sans-serif; }
-  </style>
   {% include 'analytics.html' %}
 </head>
 <body class="min-h-screen bg-base-200">
@@ -31,7 +27,7 @@
           <span class="fa fa-exclamation-circle"></span>
           <span>{{ init_error }}</span>
         </div>
-        <div class="alert alert-warning shadow-lg mb-4" style="display: none" v-show="! ready && ! init_error">
+        <div class="alert alert-info shadow-sm mb-4 border border-base-300/50" style="display: none" v-show="! ready && ! init_error">
           <span class="fa fa-circle-o-notch fa-spin fa-fw"></span>
           <span>Connecting to server ...</span>
         </div>
@@ -48,9 +44,9 @@
               <div class="p-4 alert alert-error rounded-none" v-if="status && status.err">
                 <span class="fa fa-warning"></span> Error loading validator node status.
               </div>
-              <div v-if="status && status.rows" class="flex flex-wrap gap-3 p-4">
-                <div v-for="row in status.rows" class="flex items-center gap-3 rounded-xl bg-base-100 border border-base-300 px-4 py-2.5 shadow-sm min-w-0 flex-1" style="max-width: 18rem;">
-                  <div class="flex-shrink-0 w-8 h-8">
+              <div v-if="status && status.rows" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+                <div v-for="row in status.rows" class="flex items-start gap-3 rounded-xl bg-base-100 border border-base-300 px-4 py-3 shadow-sm min-w-0">
+                  <div class="flex-shrink-0 w-8 h-8 mt-0.5">
                     <svg width="100%" height="100%" viewBox="0 0 120 120">
                       <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="10" class="text-base-300" />
                       <circle class="progress-circle text-primary" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="10"
@@ -60,6 +56,8 @@
                   <div class="min-w-0 flex-1">
                     <p class="font-medium text-sm truncate" :title="row.name">{{ row.name }}</p>
                     <span class="badge badge-sm mt-1" :class="row.unreachable ? 'badge-error' : (row.state ? 'badge-success' : 'badge-ghost')">{{ row.state || (row.unreachable ? 'Unreachable' : '—') }}</span>
+                    <p v-if="row.uptime" class="text-xs text-base-content/60 mt-2" :title="row.uptime"><span class="fa fa-clock-o opacity-70"></span> {{ row.uptime }}</p>
+                    <p v-if="row.txns" class="text-xs text-base-content/50 mt-0.5 font-mono" :title="row.txns">{{ row.txns }}</p>
                   </div>
                 </div>
               </div>

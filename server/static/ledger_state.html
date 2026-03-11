@@ -1,27 +1,27 @@
 <div class="card bg-base-100 shadow-xl border border-base-300" v-if="display_ledger_state">
-  <div class="card-body">
-    <h2 class="card-title text-lg">
+  <div class="card-body py-4 px-4">
+    <h2 class="card-title text-base">
       <span class="fa fa-sitemap opacity-80"></span>
       Ledger State
     </h2>
-    <div class="alert alert-info py-2" v-if="syncing">
+    <div class="alert alert-info py-2 text-sm" v-if="syncing">
       <span class="fa fa-info-circle"></span>
       <span>Fetching transactions</span>
     </div>
-    <p class="text-sm text-base-content/70">View the state of the ledgers:</p>
-    <div class="flex flex-col gap-2 mt-2">
+    <p class="text-xs text-base-content/70">View transactions for all 3 ledgers:</p>
+    <div class="flex flex-col gap-1.5 mt-2">
       {% if INDY_SCAN_URL %}
       <a href="{{ INDY_SCAN_URL }}" class="btn btn-ghost btn-sm justify-start gap-2" target="_blank" rel="noopener">
         <span class="fa fa-chevron-right"></span> {{ INDY_SCAN_TEXT }} <i class="fa fa-external-link"></i>
       </a>
       {% else %}
-      <a href="/browse/domain" class="btn btn-ghost btn-sm justify-start gap-2">
+      <a href="/browse/domain" class="btn btn-ghost btn-sm justify-start gap-2 ledger-state-link">
         <span class="fa fa-chevron-right"></span> Domain
       </a>
-      <a href="/browse/pool" class="btn btn-ghost btn-sm justify-start gap-2">
+      <a href="/browse/pool" class="btn btn-ghost btn-sm justify-start gap-2 ledger-state-link">
         <span class="fa fa-chevron-right"></span> Pool
       </a>
-      <a href="/browse/config" class="btn btn-ghost btn-sm justify-start gap-2">
+      <a href="/browse/config" class="btn btn-ghost btn-sm justify-start gap-2 ledger-state-link">
         <span class="fa fa-chevron-right"></span> Config
       </a>
       {% endif %}

@@ -8,15 +8,11 @@
   {% if FAVICON_URL %}
   <link rel="icon" href="{{ FAVICON_URL }}" type="image/x-icon">
   {% endif %}
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <link href="/include/css/tailwind.css" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="/include/js/common.js"></script>
-  <style type="text/tailwindcss">
-    body { font-family: 'Inter', sans-serif; }
-  </style>
   {% include 'analytics.html' %}
 </head>
 <body class="min-h-screen bg-base-200">
@@ -30,8 +26,8 @@
       </a>
       <div id="vue-ledger">
         <div class="card bg-base-100 shadow-xl border border-base-300">
-          <div class="card-body">
-            <h2 class="card-title text-lg flex-wrap gap-2">
+          <div class="card-body py-4 px-4 md:py-5 md:px-6">
+            <h2 class="card-title text-base flex-wrap gap-2">
               Ledger Transactions
               <span class="badge badge-ghost badge-sm gap-1" v-if="loading">
                 <span class="fa fa-circle-o-notch fa-spin"></span> Loading ...
@@ -57,7 +53,7 @@
                   <li v-for="p in nav.pages" :class="'join-item btn btn-sm' + (p.active ? ' btn-active' : ' btn-ghost')">
                     {% raw %}
                     <a href="#" @click.prevent="gotoPage(p.index)" v-if="p.link">{{p.index}}</a>
-                    <span v-else>{{p.text}}</span>
+                    <span v-if="!p.link">{{p.text}}</span>
                     {% endraw %}
                   </li>
                 </ul>
@@ -86,89 +82,89 @@
               <template v-if="loaded">
                 {% raw %}
                 <div class="overflow-x-auto">
-                  <table class="table table-zebra table-pin-rows" v-if="txns.length">
+                  <table class="table table-zebra table-pin-rows ledger-table" v-if="txns.length">
                     <tbody>
                       <tr v-for="entry in txns" class="hover">
-                        <td class="font-mono text-sm w-16 align-top">#{{entry.txnMetadata.seqNo}}</td>
-                        <td class="align-top text-sm">
+                        <td class="font-mono w-14 align-top ledger-neon-cyan">#{{entry.txnMetadata.seqNo}}</td>
+                        <td class="align-top">
                           <template v-if="entry.txnMetadata.txnId">
-                            <div class="badge badge-primary badge-sm mb-1">Message Wrapper</div>
-                            <div v-if="entry.txnMetadata.txnId" class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Transaction ID:</span> <span class="font-mono text-xs break-all">{{entry.txnMetadata.txnId}}</span></div>
-                            <div v-if="entry.txnMetadata.txnTime" class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Transaction time:</span> <span class="font-mono text-xs">{{entry.txnMetadata.txnTime | format_time}} ({{entry.txnMetadata.txnTime}})</span></div>
-                            <div v-if="entry.reqSignature && entry.reqSignature.values" class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Signed by:</span> <span class="font-mono text-xs">{{entry.reqSignature.values[0].from}}</span></div>
+                            <div class="badge badge-primary badge-sm mb-0.5">Message Wrapper</div>
+                            <div v-if="entry.txnMetadata.txnId" class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Transaction ID:</span> <span class="font-mono text-xs break-all ledger-neon-cyan">{{entry.txnMetadata.txnId}}</span></div>
+                            <div v-if="entry.txnMetadata.txnTime" class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Time:</span> <span class="font-mono text-xs ledger-neon-amber">{{entry.txnMetadata.txnTime | format_time}}</span></div>
+                            <div v-if="entry.reqSignature && entry.reqSignature.values" class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Signed by:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.reqSignature.values[0].from}}</span></div>
                           </template>
                           <template v-if="entry.txn && entry.txn.metadata && entry.txn.metadata.from">
-                            <div class="badge badge-ghost badge-sm mb-1">Metadata</div>
-                            <div v-if="entry.txn.metadata.from" class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">From nym:</span> <span class="font-mono text-xs">{{entry.txn.metadata.from}}</span></div>
-                            <div v-if="entry.txn.metadata.reqId" class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Request ID:</span> <span class="font-mono text-xs">{{entry.txn.metadata.reqId}}</span></div>
-                            <div v-if="entry.txn.metadata.digest" class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Digest:</span> <span class="font-mono text-xs break-all">{{entry.txn.metadata.digest}}</span></div>
+                            <div class="badge badge-ghost badge-sm mb-0.5">Metadata</div>
+                            <div v-if="entry.txn.metadata.from" class="mb-0.5 text-base-content/80"><span class="ledger-row-label">From nym:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.txn.metadata.from}}</span></div>
+                            <div v-if="entry.txn.metadata.reqId" class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Request ID:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.txn.metadata.reqId}}</span></div>
+                            <div v-if="entry.txn.metadata.digest" class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Digest:</span> <span class="font-mono text-xs break-all ledger-neon-violet">{{entry.txn.metadata.digest}}</span></div>
                           </template>
-                          <div class="badge badge-outline badge-sm mb-1">Transaction</div>
-                          <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Type:</span> <span class="font-mono text-xs">{{txnType(entry.txn.type)}}</span></div>
+                          <div class="badge badge-outline badge-sm mb-0.5 ledger-neon-mint">Transaction</div>
+                          <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Type:</span> <span class="font-mono text-xs ledger-neon-mint">{{txnType(entry.txn.type)}}</span></div>
                           <template v-if="entry.txn.type == '0'">
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.alias"><span class="font-medium text-base-content/60">Alias:</span> <span class="font-mono text-xs">{{entry.txn.data.data.alias}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Nym:</span> <span class="font-mono text-xs">{{entry.txn.data.dest}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.client_ip"><span class="font-medium text-base-content/60">Client IP:</span> <span class="font-mono text-xs">{{entry.txn.data.data.client_ip}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.client_port"><span class="font-medium text-base-content/60">Client port:</span> <span class="font-mono text-xs">{{entry.txn.data.data.client_port}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.node_ip"><span class="font-medium text-base-content/60">Node IP:</span> <span class="font-mono text-xs">{{entry.txn.data.data.node_ip}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.node_port"><span class="font-medium text-base-content/60">Node port:</span> <span class="font-mono text-xs">{{entry.txn.data.data.node_port}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.services"><span class="font-medium text-base-content/60">Services:</span> <span class="font-mono text-xs">{{entry.txn.data.data.services | concat}}</span></div>
+                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.alias"><span class="ledger-row-label">Alias:</span> <span class="font-mono text-xs ledger-neon-violet">{{entry.txn.data.data.alias}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Nym:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.txn.data.dest}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.data.client_ip"><span class="ledger-row-label">Client IP:</span> <span class="font-mono text-xs">{{entry.txn.data.data.client_ip}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.data.client_port"><span class="ledger-row-label">Client port:</span> <span class="font-mono text-xs">{{entry.txn.data.data.client_port}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.data.node_ip"><span class="ledger-row-label">Node IP:</span> <span class="font-mono text-xs">{{entry.txn.data.data.node_ip}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.data.node_port"><span class="ledger-row-label">Node port:</span> <span class="font-mono text-xs">{{entry.txn.data.data.node_port}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.data.services"><span class="ledger-row-label">Services:</span> <span class="font-mono text-xs ledger-neon-mint">{{entry.txn.data.data.services | concat}}</span></div>
                           </template>
                           <template v-if="entry.txn.type == '1'">
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.alias"><span class="font-medium text-base-content/60">Alias:</span> <span class="font-mono text-xs">{{entry.txn.data.alias}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Nym:</span> <span class="font-mono text-xs">{{entry.txn.data.dest}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Role:</span> <span class="font-mono text-xs">{{roleType(entry.txn.data.role)}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Verkey:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.verkey}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.alias"><span class="ledger-row-label">Alias:</span> <span class="font-mono text-xs ledger-neon-violet">{{entry.txn.data.alias}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Nym:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.txn.data.dest}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Role:</span> <span class="font-mono text-xs ledger-neon-mint">{{roleType(entry.txn.data.role)}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Verkey:</span> <span class="font-mono text-xs break-all ledger-neon-cyan">{{entry.txn.data.verkey}}</span></div>
                           </template>
                           <template v-if="entry.txn.type == '4'">
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.version"><span class="font-medium text-base-content/60">Version:</span> <span class="font-mono text-xs">{{entry.txn.data.version}}</span></div>
-                            <div class="block text-base-content/80 mb-0.5" v-if="entry.txn.data.text"><span class="font-medium text-base-content/60">AML:</span> <span class="font-mono text-xs">{{entry.txn.data.text}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.version"><span class="ledger-row-label">Version:</span> <span class="font-mono text-xs ledger-neon-amber">{{entry.txn.data.version}}</span></div>
+                            <div class="block mb-0.5 text-base-content/80" v-if="entry.txn.data.text"><span class="ledger-row-label">AML:</span> <span class="font-mono text-xs">{{entry.txn.data.text}}</span></div>
                           </template>
                           <template v-if="entry.txn.type == '5'">
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.version"><span class="font-medium text-base-content/60">Version:</span> <span class="font-mono text-xs">{{entry.txn.data.version}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.amlContext"><span class="font-medium text-base-content/60">Context:</span> <span class="font-mono text-xs">{{entry.txn.data.amlContext}}</span></div>
-                            <div class="block text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">AML:</span> <dl class="font-mono text-xs mt-0.5"><template v-for="(amlVal, amlType) in entry.txn.data.aml"><dt>{{amlType}}</dt><dd>{{amlVal}}</dd></template></dl></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.version"><span class="ledger-row-label">Version:</span> <span class="font-mono text-xs ledger-neon-amber">{{entry.txn.data.version}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.amlContext"><span class="ledger-row-label">Context:</span> <span class="font-mono text-xs">{{entry.txn.data.amlContext}}</span></div>
+                            <div class="block mb-0.5 text-base-content/80"><span class="ledger-row-label">AML:</span> <dl class="font-mono text-xs mt-0.5"><template v-for="(amlVal, amlType) in entry.txn.data.aml"><dt>{{amlType}}</dt><dd>{{amlVal}}</dd></template></dl></div>
                           </template>
                           <template v-if="entry.txn.type == '100'">
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Nym:</span> <span class="font-mono text-xs">{{entry.txn.data.dest}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Attribute data:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.raw}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Nym:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.txn.data.dest}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Attribute data:</span> <span class="font-mono text-xs break-all ledger-neon-violet">{{entry.txn.data.raw}}</span></div>
                           </template>
                           <template v-if="entry.txn.type == '101'">
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Schema name:</span> <span class="font-mono text-xs">{{entry.txn.data.data.name}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Schema version:</span> <span class="font-mono text-xs">{{entry.txn.data.data.version}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.attr_names"><span class="font-medium text-base-content/60">Schema attributes:</span> <ul class="font-mono text-xs list-disc list-inside"><li v-for="attr in entry.txn.data.data.attr_names">{{attr}}</li></ul></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Schema name:</span> <span class="font-mono text-xs ledger-neon-violet">{{entry.txn.data.data.name}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Schema version:</span> <span class="font-mono text-xs ledger-neon-amber">{{entry.txn.data.data.version}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.data.attr_names"><span class="ledger-row-label">Schema attributes:</span> <ul class="font-mono text-xs list-disc list-inside"><li v-for="attr in entry.txn.data.data.attr_names">{{attr}}</li></ul></div>
                           </template>
                           <template v-if="entry.txn.type == '102'">
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Reference:</span> <span class="font-mono text-xs">{{entry.txn.data.ref}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Signature type:</span> <span class="font-mono text-xs">{{entry.txn.data.signature_type}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Tag:</span> <span class="font-mono text-xs">{{entry.txn.data.tag}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.data.primary"><span class="font-medium text-base-content/60">Attributes:</span> <ul class="font-mono text-xs list-disc list-inside"><li v-for="(hash, attr) in entry.txn.data.data.primary.r">{{attr}}</li></ul></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Reference:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.txn.data.ref}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Signature type:</span> <span class="font-mono text-xs ledger-neon-mint">{{entry.txn.data.signature_type}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Tag:</span> <span class="font-mono text-xs">{{entry.txn.data.tag}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.data.primary"><span class="ledger-row-label">Attributes:</span> <ul class="font-mono text-xs list-disc list-inside"><li v-for="(hash, attr) in entry.txn.data.data.primary.r">{{attr}}</li></ul></div>
                           </template>
                           <template v-if="entry.txn.type == '113'">
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Revocation registry type:</span> <span class="font-mono text-xs">{{entry.txn.data.revocDefType}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Credential definition ID:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.credDefId}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Tag:</span> <span class="font-mono text-xs">{{entry.txn.data.tag}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Issuance type:</span> <span class="font-mono text-xs">{{entry.txn.data.value.issuanceType}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Maximum credential count:</span> <span class="font-mono text-xs">{{entry.txn.data.value.maxCredNum}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Tails file hash:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.value.tailsHash}}</span></div>
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Tails file location:</span> <span class="font-mono text-xs">{{entry.txn.data.value.tailsLocation}}</span></div>
-                            <div class="block text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Accumulator key:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.value.publicKeys.accumKey.z}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Revocation registry type:</span> <span class="font-mono text-xs ledger-neon-mint">{{entry.txn.data.revocDefType}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Credential definition ID:</span> <span class="font-mono text-xs break-all ledger-neon-cyan">{{entry.txn.data.credDefId}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Tag:</span> <span class="font-mono text-xs">{{entry.txn.data.tag}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Issuance type:</span> <span class="font-mono text-xs ledger-neon-mint">{{entry.txn.data.value.issuanceType}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Maximum credential count:</span> <span class="font-mono text-xs ledger-neon-amber">{{entry.txn.data.value.maxCredNum}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Tails file hash:</span> <span class="font-mono text-xs break-all ledger-neon-violet">{{entry.txn.data.value.tailsHash}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Tails file location:</span> <span class="font-mono text-xs">{{entry.txn.data.value.tailsLocation}}</span></div>
+                            <div class="block mb-0.5 text-base-content/80"><span class="ledger-row-label">Accumulator key:</span> <span class="font-mono text-xs break-all ledger-neon-violet">{{entry.txn.data.value.publicKeys.accumKey.z}}</span></div>
                           </template>
                           <template v-if="entry.txn.type == '114'">
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Revocation registry type:</span> <span class="font-mono text-xs">{{entry.txn.data.revocDefType}}</span></div>
-                            <div class="block text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Revocation registry ID:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.revocRegDefId}}</span></div>
-                            <div class="block text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Accumulator value:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.value.accum}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Revocation registry type:</span> <span class="font-mono text-xs ledger-neon-mint">{{entry.txn.data.revocDefType}}</span></div>
+                            <div class="block mb-0.5 text-base-content/80"><span class="ledger-row-label">Revocation registry ID:</span> <span class="font-mono text-xs break-all ledger-neon-cyan">{{entry.txn.data.revocRegDefId}}</span></div>
+                            <div class="block mb-0.5 text-base-content/80"><span class="ledger-row-label">Accumulator value:</span> <span class="font-mono text-xs break-all ledger-neon-violet">{{entry.txn.data.value.accum}}</span></div>
                           </template>
                           <template v-if="entry.txn.type == '112'">
-                            <div class="text-base-content/80 mb-0.5"><span class="font-medium text-base-content/60">Nym:</span> <span class="font-mono text-xs">{{entry.txn.data.dest}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.verkey"><span class="font-medium text-base-content/60">Verkey:</span> <span class="font-mono text-xs break-all">{{entry.txn.data.verkey}}</span></div>
+                            <div class="mb-0.5 text-base-content/80"><span class="ledger-row-label">Nym:</span> <span class="font-mono text-xs ledger-neon-cyan">{{entry.txn.data.dest}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.verkey"><span class="ledger-row-label">Verkey:</span> <span class="font-mono text-xs break-all ledger-neon-cyan">{{entry.txn.data.verkey}}</span></div>
                           </template>
                           <template v-if="entry.txn.type == '120'">
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.constraint"><span class="font-medium text-base-content/60">Constraint:</span> <span class="font-mono text-xs">{{entry.txn.data.constraint}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.auth_action"><span class="font-medium text-base-content/60">Action:</span> <span class="font-mono text-xs">{{entry.txn.data.auth_action}}</span></div>
-                            <div class="text-base-content/80 mb-0.5" v-if="entry.txn.data.auth_type"><span class="font-medium text-base-content/60">Auth type:</span> <span class="font-mono text-xs">{{entry.txn.data.auth_type}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.constraint"><span class="ledger-row-label">Constraint:</span> <span class="font-mono text-xs ledger-neon-violet">{{entry.txn.data.constraint}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.auth_action"><span class="ledger-row-label">Action:</span> <span class="font-mono text-xs ledger-neon-mint">{{entry.txn.data.auth_action}}</span></div>
+                            <div class="mb-0.5 text-base-content/80" v-if="entry.txn.data.auth_type"><span class="ledger-row-label">Auth type:</span> <span class="font-mono text-xs ledger-neon-mint">{{entry.txn.data.auth_type}}</span></div>
                           </template>
-                          <button type="button" class="btn btn-ghost btn-xs mt-2 gap-1 text-base-content/70" @click.prevent="toggleData(entry.index)">
+                          <button type="button" class="btn btn-ghost btn-xs mt-1.5 gap-1 text-base-content/70" @click.prevent="toggleData(entry.index)">
                             Raw Data <span :class="'fa fa-chevron-' + (entry.expanded ? 'up' : 'down')"></span>
                           </button>
                           <pre class="font-mono text-xs bg-base-200 p-2 rounded mt-1 whitespace-pre-wrap break-all" v-if="entry.expanded">{{entry.json}}</pre>
@@ -176,10 +172,10 @@
                       </tr>
                     </tbody>
                   </table>
-                </div>
-                <div class="alert alert-warning" v-else>
+                <div class="alert alert-warning" v-if="!txns.length">
                   <span class="fa fa-warning"></span>
                   <span>No transactions</span>
+                </div>
                 </div>
                 {% endraw %}
               </template>
@@ -189,6 +185,6 @@
       </div>
     </div>
   </main>
-  <script src="/include/js/ledger.js?v=1" type="text/javascript"></script>
+  <script src="/include/js/ledger.js?v=2" type="text/javascript"></script>
 </body>
 </html>

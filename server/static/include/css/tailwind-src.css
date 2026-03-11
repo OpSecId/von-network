@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+/* Progress circle for validator status */
+.progress-circle {
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+/* Ledger list: compact, modern table */
+.ledger-table.table {
+  font-size: 0.8125rem;
+}
+.ledger-table.table :where(th, td) {
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+}
+.ledger-table.table tbody tr {
+  border-bottom: 1px solid hsl(var(--b2) / 0.6);
+}
+.ledger-table.table tbody tr:hover {
+  background-color: hsl(var(--b2) / 0.4);
+}
+.ledger-table .ledger-row-label {
+  font-weight: 500;
+  color: hsl(var(--bc) / 0.65);
+  margin-right: 0.25rem;
+}
+
+/* Subtle neon highlights (consistent, dark-theme friendly) */
+.ledger-neon-cyan {
+  color: rgba(34, 211, 238, 0.95);
+  text-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+}
+.ledger-neon-mint {
+  color: rgba(52, 211, 153, 0.95);
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.12);
+}
+.ledger-neon-violet {
+  color: rgba(167, 139, 250, 0.95);
+  text-shadow: 0 0 10px rgba(167, 139, 250, 0.12);
+}
+.ledger-neon-amber {
+  color: rgba(251, 191, 36, 0.9);
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.1);
+}
+
+/* Ledger State card: all 3 ledgers (Domain, Pool, Config) */
+.ledger-state-link .fa-chevron-right {
+  color: rgba(34, 211, 238, 0.85);
+}

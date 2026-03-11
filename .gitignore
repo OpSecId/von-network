@@ -149,6 +149,9 @@ Temporary Items
 
 Pipfile
 
+# Node (Tailwind build)
+node_modules/
+
 # Custom TAA
 config/aml.json
 config/taa.json
