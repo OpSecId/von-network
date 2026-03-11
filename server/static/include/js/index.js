@@ -214,6 +214,12 @@ var app = new Vue({
         }
       );
     },
+    openRegisterModal: function () {
+      this.show_register_modal = true;
+    },
+    openAuthRuleModal: function () {
+      this.show_auth_rule_modal = true;
+    },
     submitAuthRule: function () {
       this.auth_rule_loading = true;
       this.auth_rule_error = null;

@@ -27,7 +27,7 @@
           <span class="fa fa-exclamation-circle"></span>
           <span>{{ init_error }}</span>
         </div>
-        <div class="alert alert-info shadow-sm mb-4 border border-base-300/50" style="display: none" v-show="! ready && ! init_error">
+        <div class="flex items-center gap-2 py-2 px-3 rounded-lg bg-base-300/40 border border-base-300/50 mb-4 text-sm text-base-content/70" style="display: none" v-show="! ready && ! init_error">
           <span class="fa fa-circle-o-notch fa-spin fa-fw"></span>
           <span>Connecting to server ...</span>
         </div>
@@ -78,7 +78,7 @@
               Authenticate a New DID
             </h2>
             <p class="text-sm text-base-content/70">Easily write a new DID to the ledger for new identity owners.</p>
-            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" @click="show_register_modal = true">
+            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" v-on:click="openRegisterModal">
               <span class="fa fa-key"></span> Authenticate a New DID
             </button>
           </div>
@@ -90,7 +90,7 @@
               Configure Auth Rule
             </h2>
             <p class="text-sm text-base-content/70">Add or update a ledger auth rule (who may perform an action).</p>
-            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" @click="show_auth_rule_modal = true">
+            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" v-on:click="openAuthRuleModal">
               <span class="fa fa-shield"></span> Configure Auth Rule
             </button>
           </div>
@@ -99,7 +99,7 @@
     </div>
 
     <!-- Register DID modal -->
-    <dialog class="modal" :class="{ 'modal-open': show_register_modal }">
+    <div class="modal" :class="{ 'modal-open': show_register_modal }">
       <div class="modal-box max-w-md">
         <h3 class="font-semibold text-lg flex items-center gap-2">
           <span class="fa fa-key opacity-80"></span>
@@ -169,10 +169,10 @@
       <form method="dialog" class="modal-backdrop">
         <button type="button" @click="show_register_modal = false">close</button>
       </form>
-    </dialog>
+    </div>
 
     <!-- Auth rule modal -->
-    <dialog class="modal" :class="{ 'modal-open': show_auth_rule_modal }">
+    <div class="modal" :class="{ 'modal-open': show_auth_rule_modal }">
       <div class="modal-box max-w-md">
         <h3 class="font-semibold text-lg flex items-center gap-2">
           <span class="fa fa-shield opacity-80"></span>
@@ -241,7 +241,7 @@
       <form method="dialog" class="modal-backdrop">
         <button type="button" @click="show_auth_rule_modal = false">close</button>
       </form>
-    </dialog>
+    </div>
   </main>
   {% endraw %}
 
