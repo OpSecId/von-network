@@ -230,8 +230,8 @@ var app = new Vue({
         var btnReg = document.createElement('button');
         btnReg.type = 'button';
         btnReg.className = 'btn btn-ghost btn-sm gap-2 text-base-content hover:bg-base-200';
-        btnReg.title = 'Authenticate a new DID on the ledger';
-        btnReg.innerHTML = '<span class="fa fa-key"></span> Authenticate DID';
+        btnReg.title = 'Register a new DID on the ledger';
+        btnReg.innerHTML = '<span class="fa fa-key"></span> Register DID';
         btnReg.onclick = function () { self.openRegisterModal(); };
         container.appendChild(btnReg);
       }
