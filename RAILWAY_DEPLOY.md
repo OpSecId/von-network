@@ -92,7 +92,7 @@ Run the **entire** VON Network (four Indy nodes + Ledger Browser) in a **single*
 ### Resource notes
 
 - The all-in-one container is more CPU/memory intensive. On Railway, use at least a plan that allows ~1 GB RAM and enough CPU; scale up if you see OOM or timeouts.
-- Ephemeral filesystem: ledger data is lost on redeploy unless you add a volume (Railway supports volumes; attach one to the service and persist `/home/indy/ledger` if you want to keep the ledger across deploys).
+- Ephemeral filesystem: ledger data is lost on redeploy unless you add a volume (Railway supports volumes; attach one to the service and persist `/home/indy/ledger` if you want to keep the ledger across deploys). If you mount a volume at `/home/indy/ledger`, the image runs a **root wrapper** at startup that creates `ledger/sandbox` and sets ownership to `indy`, so the app can write there.
 
 ### Static IP / public URL
 
@@ -176,4 +176,4 @@ This option is not preconfigured in this repo; use it only if you need a multi-s
 - `RAILWAY_DEPLOY.md` (this file) – plan and options.
 - `Dockerfile.railway` – all-in-one (nodes + Ledger Browser).
 - `Dockerfile.railway.browser` – Ledger Browser only.
-- `scripts/railway-entrypoint.sh` – entrypoint for the all-in-one container.
+- `scripts/railway-entrypoint-wrapper.sh` – root wrapper that fixes volume permissions for `/home/indy/ledger` then runs the main entrypoint as `indy`.

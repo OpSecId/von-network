@@ -23,7 +23,7 @@ RUN pip3 install -U pip && \
 ADD --chown=indy:indy indy_config.py /etc/indy/
 ADD --chown=indy:indy . $HOME
 
-RUN chmod +x scripts/init_genesis.sh scripts/railway-entrypoint.sh
+RUN chmod +x scripts/init_genesis.sh scripts/railway-entrypoint.sh scripts/railway-entrypoint-wrapper.sh
 
 RUN mkdir -p \
     $HOME/cli-scripts \
@@ -32,4 +32,6 @@ RUN mkdir -p \
 ENV PORT=8000
 EXPOSE 8000
 
-ENTRYPOINT ["/home/indy/scripts/railway-entrypoint.sh"]
+# Run as root so the wrapper can chown the volume; it then drops to indy
+USER root
+ENTRYPOINT ["/home/indy/scripts/railway-entrypoint-wrapper.sh"]
