@@ -1,0 +1,35 @@
+# All-in-one: 4 Indy nodes + Ledger Browser in one container for Railway.
+# Use Dockerfile path: Dockerfile.railway
+FROM ghcr.io/bcgov/von-image:node-1.12-6
+
+ARG user=indy
+ARG LOG_LEVEL=info
+ARG RUST_LOG=warning
+ENV LOG_LEVEL=$LOG_LEVEL
+ENV RUST_LOG=$RUST_LOG
+
+USER root
+RUN apt-get update -y && \
+    apt-get install -y \
+    xz-utils
+USER $user
+
+ADD config ./config
+ADD server/requirements.txt server/
+RUN pip3 install -U pip && \
+    pip install --no-cache-dir -r server/requirements.txt && \
+    python -m pip install pip==9.0.3
+
+ADD --chown=indy:indy indy_config.py /etc/indy/
+ADD --chown=indy:indy . $HOME
+
+RUN chmod +x scripts/init_genesis.sh scripts/railway-entrypoint.sh
+
+RUN mkdir -p \
+    $HOME/cli-scripts \
+    && chmod -R ug+rw $HOME/cli-scripts
+
+ENV PORT=8000
+EXPOSE 8000
+
+ENTRYPOINT ["/home/indy/scripts/railway-entrypoint.sh"]

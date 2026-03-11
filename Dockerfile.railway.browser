@@ -1,0 +1,23 @@
+# Ledger Browser only: connect to an existing Indy ledger (e.g. BCovrin Test).
+# Set GENESIS_URL and optionally LEDGER_SEED in Railway.
+FROM ghcr.io/bcgov/von-image:node-1.12-6
+
+ARG user=indy
+USER $user
+
+WORKDIR /home/indy
+
+ADD server/requirements.txt ./
+RUN pip3 install -U pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    python -m pip install pip==9.0.3
+
+ADD --chown=indy:indy server ./server
+ADD --chown=indy:indy config ./config
+
+# Server reads PORT from env (Railway sets it)
+ENV PORT=8000
+EXPOSE 8000
+
+# No genesis file in image; must set GENESIS_URL (and optionally LEDGER_SEED) in Railway
+CMD ["python", "-m", "server.server"]
