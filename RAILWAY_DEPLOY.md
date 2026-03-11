@@ -21,7 +21,7 @@ This guide describes how to run [VON Network](https://github.com/bcgov/von-netwo
 4. **Variables (optional)**  
    In **Variables**, add if you want:
    - **`LEDGER_SEED`** – 32-character secret so “Register DID” works in the Ledger Browser.  
-   - For a **publicly reachable** pool (agents): **`IP`** (one domain) or **`IPS`** (four comma-separated domains). See “Making the pool publicly reachable” in Option 2 below.
+   - For a **publicly reachable** pool (agents): **`IP`** (one domain) or **`IPS`** (four comma-separated domains) or NODE_HOST + CLIENT_HOSTS for split client/node endpoints. See “Making the pool publicly reachable” and "Split client/node endpoints (domain → port)" in Option 2 below.
 
 5. **Deploy**  
    Trigger a deploy (push to `railway-deploy` or use **Deploy** in the dashboard). Wait 1–2 minutes for the pool to start. Use the **service URL** Railway shows (e.g. `https://von-network-production-xxxx.up.railway.app`) to open the Ledger Browser.
@@ -116,6 +116,39 @@ IPS=node1.mydomain.com,node2.mydomain.com,node3.mydomain.com,node4.mydomain.com
 Genesis will list `node1.mydomain.com:9701`, `node2.mydomain.com:9703`, and so on. The Ledger Browser can use a fifth domain/port.
 
 **Railway:** The TCP proxy allows **one TCP port per service**, so you cannot expose all four node ports from one service. For a public pool on Railway you need either multiple services (one per node, each with a TCP proxy and domain) or a host that allows multiple TCP ports (then use pattern 1 with **`IP`**).
+
+### Split client/node endpoints (domain → port)
+
+When you can only **map a domain to one internal port** (e.g. Railway: one custom domain per service, traffic arrives on 443 and is forwarded to a single backend port), use **`NODE_HOST`** and **`CLIENT_HOSTS`** so that:
+
+- **Node-to-node** stays internal: `node_ip` / `node_port` in genesis use **`NODE_HOST`** and the real internal ports (9701, 9703, 9705, 9707).
+- **Client-to-node** is public: `client_ip` / `client_port` in genesis use your **public hostnames** and **`CLIENT_PORT`** (e.g. 443).
+
+**Variables:**
+
+| Variable | Meaning | Example |
+|----------|---------|--------|
+| **`NODE_HOST`** | Internal hostname for node-to-node (same for all 4 nodes). | `von-network.railway.internal` |
+| **`CLIENT_HOSTS`** | Comma-separated list of **4** public hostnames (one per node, in order Node1–Node4). | `node1.pool.example.com,node2.pool.example.com,node3.pool.example.com,node4.pool.example.com` |
+| **`CLIENT_PORT`** | Public port clients use (HTTPS = 443). | `443` (default) |
+
+**Railway setup:**
+
+1. You need **4 custom domains** (or subdomains), e.g. `node1.yourdomain.com` … `node4.yourdomain.com`.
+2. In Railway, add **one service** (this all-in-one container). Add **4 custom domains** to that same service if your plan allows it, and map each domain to a **different** internal port:
+   - `node1.yourdomain.com` → internal port **9702** (Node1 client)
+   - `node2.yourdomain.com` → internal port **9704**
+   - `node3.yourdomain.com` → internal port **9706**
+   - `node4.yourdomain.com` → internal port **9708**
+3. Set variables:
+   ```
+   NODE_HOST=von-network.railway.internal
+   CLIENT_HOSTS=node1.yourdomain.com,node2.yourdomain.com,node3.yourdomain.com,node4.yourdomain.com
+   CLIENT_PORT=443
+   ```
+4. (Optional) Add a **fifth** domain for the Ledger Browser (e.g. `ledger.yourdomain.com` → internal port **8000** or whatever `PORT` is).
+
+Genesis is generated with `node_ip`/`node_port` from **`NODE_HOST`** and the usual internal ports; then a patch step sets `client_ip`/`client_port` from **`CLIENT_HOSTS`** and **`CLIENT_PORT`**. External agents use the genesis file and connect to `node1.yourdomain.com:443`, etc.
 
 ### Troubleshooting: "verkey cannot be found" for validator nodes
 

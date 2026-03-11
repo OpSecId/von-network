@@ -20,57 +20,74 @@
   {% include 'header.html' %}
 
   {% raw %}
-  <main id="vue-outer" class="container mx-auto px-4 py-6">
-    <div :class="'flex flex-col lg:flex-row gap-6 w-full' + (anonymous ? ' anonymous' : '')">
-      <div class="flex-1 min-w-0">
-        <div class="alert alert-error shadow-lg mb-4" style="display: none" v-show="init_error">
-          <span class="fa fa-exclamation-circle"></span>
-          <span>{{ init_error }}</span>
-        </div>
-        <div class="flex items-center gap-2 py-2 px-3 rounded-lg bg-base-300/40 border border-base-300/50 mb-4 text-sm text-base-content/70" style="display: none" v-show="! ready && ! init_error">
-          <span class="fa fa-circle-o-notch fa-spin fa-fw"></span>
-          <span>Connecting to server ...</span>
-        </div>
-        <div class="card bg-base-100 shadow-xl border border-base-300 mb-6" style="display: none" v-show="ready && ! anonymous">
-          <div class="card-body">
-            <h2 class="card-title text-lg">
-              <span class="fa fa-tachometer opacity-80"></span>
-              Validator Node Status
-            </h2>
-            <div class="rounded-lg bg-base-200/50 border border-base-300 overflow-hidden">
-              <div class="p-6 text-center text-base-content/70" v-if="! status">
-                <span class="fa fa-circle-o-notch fa-spin fa-fw"></span> Loading status ...
+  <main id="vue-outer" class="min-h-[calc(100vh-4rem)]">
+    <!-- Subtle background texture -->
+    <div class="landing-bg absolute inset-0 pointer-events-none" aria-hidden="true"></div>
+
+    <div class="container mx-auto px-4 py-6 lg:py-8 relative">
+      <!-- Hero when ready -->
+      <header class="mb-6 lg:mb-8" v-show="ready && ! anonymous">
+        <h1 class="text-2xl lg:text-3xl font-bold text-base-content tracking-tight">Ledger browser</h1>
+        <p class="text-base-content/60 text-sm mt-1">Validator nodes and ledger state for this Indy network</p>
+      </header>
+
+      <div :class="'flex flex-col lg:flex-row gap-6 lg:gap-8 w-full' + (anonymous ? ' anonymous' : '')">
+        <div class="flex-1 min-w-0">
+          <div class="alert alert-error shadow-lg mb-4" style="display: none" v-show="init_error">
+            <span class="fa fa-exclamation-circle"></span>
+            <span>{{ init_error }}</span>
+          </div>
+          <div class="flex items-center justify-center py-12 px-4 rounded-2xl bg-base-300/30 border border-base-300/50 text-base-content/70" style="display: none" v-show="! ready && ! init_error">
+            <div class="text-center">
+              <span class="fa fa-circle-o-notch fa-2x fa-spin block mb-3 opacity-80"></span>
+              <p class="text-sm font-medium">Connecting to network …</p>
+              <p class="text-xs mt-1 opacity-80">Checking validator status</p>
+            </div>
+          </div>
+          <section class="landing-card card bg-base-100 shadow-xl border border-base-300 rounded-2xl overflow-hidden" style="display: none" v-show="ready && ! anonymous">
+            <div class="card-body p-5 lg:p-6">
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <h2 class="card-title text-lg m-0">
+                  <span class="fa fa-server text-primary opacity-90"></span>
+                  Validator nodes
+                </h2>
+                <span class="badge badge-ghost badge-sm font-normal" v-if="status && status.rows">{{ status.rows.length }} node<span v-if="status.rows.length !== 1">s</span></span>
               </div>
-              <div class="p-4 alert alert-error rounded-none" v-if="status && status.err">
-                <span class="fa fa-warning"></span> Error loading validator node status.
-              </div>
-              <div v-if="status && status.rows" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
-                <div v-for="row in status.rows" class="flex items-start gap-3 rounded-xl bg-base-100 border border-base-300 px-4 py-3 shadow-sm min-w-0">
-                  <div class="flex-shrink-0 w-8 h-8 mt-0.5">
-                    <svg width="100%" height="100%" viewBox="0 0 120 120">
-                      <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="10" class="text-base-300" />
-                      <circle class="progress-circle text-primary" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="10"
-                          stroke-linecap="round" :stroke-dasharray="row.dash_array" :stroke-dashoffset="row.dash_offset" transform="rotate(-90, 60, 60)" />
-                    </svg>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <p class="font-medium text-sm truncate" :title="row.name">{{ row.name }}</p>
-                    <span class="badge badge-sm mt-1" :class="row.unreachable ? 'badge-error' : (row.state ? 'badge-success' : 'badge-ghost')">{{ row.state || (row.unreachable ? 'Unreachable' : (row.did || '—')) }}</span>
-                    <p v-if="row.uptime" class="text-xs text-base-content/60 mt-2" :title="row.uptime"><span class="fa fa-clock-o opacity-70"></span> {{ row.uptime }}</p>
-                    <p v-if="row.txns" class="text-xs text-base-content/50 mt-0.5 font-mono" :title="row.txns">{{ row.txns }}</p>
+              <div class="rounded-xl bg-base-200/50 border border-base-300 overflow-hidden">
+                <div class="p-6 text-center text-base-content/60" v-if="! status">
+                  <span class="fa fa-circle-o-notch fa-spin fa-fw"></span> Loading status …
+                </div>
+                <div class="p-4 alert alert-error rounded-none" v-if="status && status.err">
+                  <span class="fa fa-warning"></span> Error loading validator node status.
+                </div>
+                <div v-if="status && status.rows" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+                  <div v-for="row in status.rows" class="flex items-start gap-3 rounded-xl bg-base-100 border border-base-300/80 px-4 py-3 shadow-sm min-w-0 hover:border-primary/30 transition-colors">
+                    <div class="flex-shrink-0 w-9 h-9 mt-0.5">
+                      <svg width="100%" height="100%" viewBox="0 0 120 120" class="text-primary/80">
+                        <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="8" class="text-base-300" opacity="0.5" />
+                        <circle class="progress-circle text-primary" cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="8"
+                            stroke-linecap="round" :stroke-dasharray="row.dash_array" :stroke-dashoffset="row.dash_offset" transform="rotate(-90, 60, 60)" />
+                      </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="font-medium text-sm truncate" :title="row.name">{{ row.name }}</p>
+                      <span class="badge badge-sm mt-1" :class="row.unreachable ? 'badge-error' : (row.state ? 'badge-success' : 'badge-ghost')">{{ row.state || (row.unreachable ? 'Unreachable' : (row.did || '—')) }}</span>
+                      <p v-if="row.uptime" class="text-xs text-base-content/60 mt-2" :title="row.uptime"><span class="fa fa-clock-o opacity-70"></span> {{ row.uptime }}</p>
+                      <p v-if="row.txns" class="text-xs text-base-content/50 mt-0.5 font-mono" :title="row.txns">{{ row.txns }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
 
-      <aside class="w-full lg:w-80 flex-shrink-0 space-y-6" style="display: none" v-show="ready">
-        {% endraw %}
-        {% include 'ledger_state.html' %}
-        {% raw %}
-      </aside>
+        <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-6" style="display: none" v-show="ready">
+          {% endraw %}
+          {% include 'ledger_state.html' %}
+          {% raw %}
+        </aside>
+      </div>
     </div>
 
     <!-- Register DID modal -->

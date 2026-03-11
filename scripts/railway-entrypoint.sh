@@ -2,13 +2,17 @@
 set -e
 
 # All-in-one: run 4 Indy nodes + Ledger Browser in one container.
-# Genesis node addresses: set IP (one host) or IPS (comma-separated hosts) in env for public reachability; else defaults to 127.0.0.1.
+# Genesis: set IP/IPS for node addresses; optionally NODE_HOST + CLIENT_HOSTS for split client/node endpoints (e.g. Railway domain→port).
 
 cd /home/indy
 export HOST="${HOST:-0.0.0.0}"
 export NODE_NUM="1 2 3 4"
 
-# Genesis: use IP or IPS from environment so pool can be publicly reachable; default 127.0.0.1 for local-only
+# Genesis: NODE_HOST = internal host for node-to-node (node_ip/node_port). If set, genesis is generated with it; then CLIENT_HOSTS patch can set client_ip/client_port for public.
+if [ -n "$NODE_HOST" ]; then
+  export IP="$NODE_HOST"
+  unset IPS DOCKERHOST
+fi
 if [ -z "$IP" ] && [ -z "$IPS" ]; then
   export IP="${IP:-127.0.0.1}"
   unset IPS DOCKERHOST
@@ -17,6 +21,11 @@ fi
 if [ ! -d "/home/indy/ledger/sandbox/keys" ]; then
   echo "Ledger does not exist - Creating genesis and keys..."
   bash ./scripts/init_genesis.sh
+  if [ -n "$CLIENT_HOSTS" ]; then
+    echo "Patching genesis client endpoints (CLIENT_HOSTS)..."
+    export GENESIS_FILE="${GENESIS_FILE:-/home/indy/ledger/sandbox/pool_transactions_genesis}"
+    python3 /home/indy/scripts/patch_genesis_client_endpoints.py
+  fi
 fi
 
 # Same supervisord setup as scripts/start_nodes.sh
