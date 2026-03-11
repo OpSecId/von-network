@@ -55,7 +55,7 @@
                   </div>
                   <div class="min-w-0 flex-1">
                     <p class="font-medium text-sm truncate" :title="row.name">{{ row.name }}</p>
-                    <span class="badge badge-sm mt-1" :class="row.unreachable ? 'badge-error' : (row.state ? 'badge-success' : 'badge-ghost')">{{ row.state || (row.unreachable ? 'Unreachable' : '—') }}</span>
+                    <span class="badge badge-sm mt-1" :class="row.unreachable ? 'badge-error' : (row.state ? 'badge-success' : 'badge-ghost')">{{ row.state || (row.unreachable ? 'Unreachable' : (row.did || '—')) }}</span>
                     <p v-if="row.did" class="text-xs text-base-content/60 mt-1.5 font-mono truncate" :title="row.did">Nym: {{ row.did }}</p>
                     <p v-if="row.uptime" class="text-xs text-base-content/60 mt-2" :title="row.uptime"><span class="fa fa-clock-o opacity-70"></span> {{ row.uptime }}</p>
                     <p v-if="row.txns" class="text-xs text-base-content/50 mt-0.5 font-mono" :title="row.txns">{{ row.txns }}</p>
@@ -71,35 +71,11 @@
         {% endraw %}
         {% include 'ledger_state.html' %}
         {% raw %}
-        <div class="card bg-base-100 shadow-xl border border-base-300" v-if="register_new_dids">
-          <div class="card-body">
-            <h2 class="card-title text-lg">
-              <span class="fa fa-key opacity-80"></span>
-              Authenticate a New DID
-            </h2>
-            <p class="text-sm text-base-content/70">Easily write a new DID to the ledger for new identity owners.</p>
-            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" v-on:click="openRegisterModal">
-              <span class="fa fa-key"></span> Authenticate a New DID
-            </button>
-          </div>
-        </div>
-        <div class="card bg-base-100 shadow-xl border border-base-300" v-if="enable_auth_rule">
-          <div class="card-body">
-            <h2 class="card-title text-lg">
-              <span class="fa fa-shield opacity-80"></span>
-              Configure Auth Rule
-            </h2>
-            <p class="text-sm text-base-content/70">Add or update a ledger auth rule (who may perform an action).</p>
-            <button type="button" class="btn btn-primary btn-sm gap-2 mt-2" v-on:click="openAuthRuleModal">
-              <span class="fa fa-shield"></span> Configure Auth Rule
-            </button>
-          </div>
-        </div>
       </aside>
     </div>
 
     <!-- Register DID modal -->
-    <div class="modal" :class="{ 'modal-open': show_register_modal }">
+    <div class="modal" :class="{ 'modal-open': show_register_modal }" v-show="show_register_modal">
       <div class="modal-box max-w-md">
         <h3 class="font-semibold text-lg flex items-center gap-2">
           <span class="fa fa-key opacity-80"></span>
@@ -172,7 +148,7 @@
     </div>
 
     <!-- Auth rule modal -->
-    <div class="modal" :class="{ 'modal-open': show_auth_rule_modal }">
+    <div class="modal" :class="{ 'modal-open': show_auth_rule_modal }" v-show="show_auth_rule_modal">
       <div class="modal-box max-w-md">
         <h3 class="font-semibold text-lg flex items-center gap-2">
           <span class="fa fa-shield opacity-80"></span>

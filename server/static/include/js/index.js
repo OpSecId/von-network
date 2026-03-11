@@ -71,6 +71,7 @@ var app = new Vue({
             self.display_ledger_state = result.display_ledger_state;
             self.enable_auth_rule = result.enable_auth_rule || false;
             self.syncing = result.syncing;
+            self.ensureNavActions();
             if (self.ready) {
               self.status = result.validators ? self.formatValidatorStatus(result.validators) : null;
               setTimeout(function () { self.fetchStatus(); }, prev_ready ? 60000 : 1000);
@@ -219,6 +220,30 @@ var app = new Vue({
     },
     openAuthRuleModal: function () {
       this.show_auth_rule_modal = true;
+    },
+    ensureNavActions: function () {
+      var container = document.getElementById('nav-vue-actions');
+      if (!container) { return; }
+      container.innerHTML = '';
+      var self = this;
+      if (this.register_new_dids) {
+        var btnReg = document.createElement('button');
+        btnReg.type = 'button';
+        btnReg.className = 'btn btn-ghost btn-sm gap-2 text-base-content hover:bg-base-200';
+        btnReg.title = 'Authenticate a new DID on the ledger';
+        btnReg.innerHTML = '<span class="fa fa-key"></span> Authenticate DID';
+        btnReg.onclick = function () { self.openRegisterModal(); };
+        container.appendChild(btnReg);
+      }
+      if (this.enable_auth_rule) {
+        var btnAuth = document.createElement('button');
+        btnAuth.type = 'button';
+        btnAuth.className = 'btn btn-ghost btn-sm gap-2 text-base-content hover:bg-base-200';
+        btnAuth.title = 'Add or update a ledger auth rule';
+        btnAuth.innerHTML = '<span class="fa fa-shield"></span> Auth Rule';
+        btnAuth.onclick = function () { self.openAuthRuleModal(); };
+        container.appendChild(btnAuth);
+      }
     },
     submitAuthRule: function () {
       this.auth_rule_loading = true;
